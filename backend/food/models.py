@@ -1,5 +1,6 @@
-from django.contrib.auth import get_user_model
 from django.db import models
+from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 User = get_user_model()
 
@@ -15,6 +16,10 @@ class Tag(models.Model):
         'Идентификатор',
         unique=True
     )
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
 
 
 class Ingredient(models.Model):
@@ -72,12 +77,12 @@ class Recipe(models.Model):
     Ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
-        help_text='Продукты для приготовления блюда по рецепту'
+        help_text='Продукты для приготовления блюда по рецепту',
         related_name='recipes'
     )
     tags = models.ManyToManyField(
         Tag,
-        help_text='Можно установить несколько тегов на один рецепт'
+        help_text='Можно установить несколько тегов на один рецепт',
         verbose_name='Теги',
         blank=True,
         related_name='recipes'
