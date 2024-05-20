@@ -9,36 +9,57 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='food',
+        related_name='recipes',
         verbose_name='Автор рецепта'
     )
     name = models.CharField(
-        'Название',
+        'Название рецепта',
+        help_text='Например "Крабовый салат"',
         max_length=16
     )
     image = models.ImageField(
         'Изображение',
-        upload_to='food/',
+        help_text='Загрузите изображение для вашего рецепта',
+        upload_to='images/',
         null=True,
         default=None
     )
     description = models.TextField(
-        'Описание'
+        'Описание',
+        help_text='Описание и инструкция по приготовлению блюда'
     )
     Ingredients = models.ManyToManyField(
         'Ингредиенты',
+        help_text='Продукты для приготовления блюда по рецепту'
         Ingredient,
         through='IngredientRecipe'
     )
-    # Ингредиенты — продукты для приготовления блюда по рецепту. Множественное поле с выбором из предустановленного списка и с указанием количества и единицы измерения.
     tag = models.ManyToManyField(
         'Тег',
+        help_text='Можно установить несколько тегов на один рецепт'
         Tag,
-        through='TagRecipe'
+        related_name='recipes'
     )
-    # Тег. Можно установить несколько тегов на один рецепт.
-    Время приготовления в минутах.
-        
+    cooking_time = models.IntegerField(
+        'Время приготовления',
+        help_text='Время приготовления (в минутах), целое число',
+        validators=[
+            MinValueValidator(
+                1,
+                'Время приготовления не может быть меньше 1 минуты',
+            )
+        ]
+    )
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True,
+        db_index=True,
+    )        
+
+    class Meta:
+        ordering = ['pub_date']
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return self.name
+        return f'{self.name}\n{self.text}'
