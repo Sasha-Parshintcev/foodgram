@@ -5,6 +5,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 User = get_user_model()
 
 
+TEXT_LENGTH_LIMIT=10
+
+
 class Tag(models.Model):
     """Модель ингредиента."""
     tag = models.CharField(
@@ -109,7 +112,7 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return f'{self.name}\n{self.text}'
+        return f'{self.name}\n{self.text[:TEXT_LENGTH_LIMIT]}'
 
 
 class RecipeIngredient(models.Model):
