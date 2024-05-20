@@ -5,6 +5,7 @@ User = get_user_model()
 
 
 class Tag(models.Model):
+    """Модель ингредиента."""
     tag = models.CharField(
         'Тег',
         max_length=20
@@ -17,6 +18,7 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
+    """Модель ингредиента."""
     name = models.CharField(
         verbose_name='Название ингредиента',
         help_text='Названия ингридинтов для блюда',
@@ -106,6 +108,7 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
+    """Модель ингредиентов для рецепта."""
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
