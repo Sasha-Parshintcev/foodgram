@@ -4,6 +4,40 @@ from django.db import models
 User = get_user_model()
 
 
+class Tag(models.Model):
+    tag = models.CharField(
+        'Тег',
+        max_length=20
+    )
+
+
+class Ingredient(models.Model):
+    name = models.CharField(
+        verbose_name='Название ингредиента',
+        help_text='Названия ингридинтов для блюда',
+        max_length=256,
+    )
+    measurement_unit = models.CharField(
+        verbose_name='Единица измерения',
+        help_text='Применяйте наиболее подходящую единицу измерения',
+        max_length=15,
+    )
+
+    class Meta:
+        ordering = ['id']
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='Уникальная запись ингредиент - единица измерения',
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+
 class Recipe(models.Model):
     """Модель рецепта."""
     author = models.ForeignKey(
@@ -15,7 +49,7 @@ class Recipe(models.Model):
     name = models.CharField(
         'Название рецепта',
         help_text='Например "Крабовый салат"',
-        max_length=16
+        max_length=256
     )
     image = models.ImageField(
         'Изображение',
@@ -29,15 +63,16 @@ class Recipe(models.Model):
         help_text='Описание и инструкция по приготовлению блюда'
     )
     Ingredients = models.ManyToManyField(
-        'Ингредиенты',
-        help_text='Продукты для приготовления блюда по рецепту'
         Ingredient,
-        through='IngredientRecipe'
+        verbose_name='Ингредиенты',
+        help_text='Продукты для приготовления блюда по рецепту'
+        related_name='recipes'
     )
-    tag = models.ManyToManyField(
-        'Тег',
-        help_text='Можно установить несколько тегов на один рецепт'
+    tags = models.ManyToManyField(
         Tag,
+        help_text='Можно установить несколько тегов на один рецепт'
+        verbose_name='Теги',
+        blank=True,
         related_name='recipes'
     )
     cooking_time = models.IntegerField(
