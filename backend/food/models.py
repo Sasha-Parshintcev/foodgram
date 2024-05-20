@@ -8,6 +8,11 @@ class Tag(models.Model):
     tag = models.CharField(
         'Тег',
         max_length=20
+        
+    )
+    slug = models.SlugField(
+        'Идентификатор',
+        unique=True
     )
 
 
@@ -98,3 +103,28 @@ class Recipe(models.Model):
 
     def __str__(self):
         return f'{self.name}\n{self.text}'
+
+
+class RecipeIngredient(models.Model):
+    ingredient = models.ForeignKey(
+        Ingredient,
+        verbose_name='Ингредиент',
+        help_text='Выберите ингредиент',
+        on_delete=models.CASCADE,
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name='ingredients',
+        on_delete=models.CASCADE,
+    )
+    amount = models.IntegerField(
+        verbose_name='Количество',
+        help_text='Требуемое количество для рецепта (целое число)',
+    )
+
+    class Meta:
+        verbose_name = 'Ингредиент рецепта'
+        verbose_name_plural = 'Ингредиенты рецепта'
+
+    def __str__(self):
+        return self.ingredient.name
