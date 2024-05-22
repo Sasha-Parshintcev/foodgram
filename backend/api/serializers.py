@@ -19,5 +19,13 @@ class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Ingredient."""
 
     class Meta:
-        model = Title
+        model = Ingredient
         fields = ('name', 'measurement_unit')
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для запросов к Recipe."""
+
+    class Meta:
+        model = Tag
+        fields = ('name', 'slug')
