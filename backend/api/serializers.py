@@ -26,23 +26,23 @@ class IngredientSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Recipe."""
     
-    ingredient = IngredientSerializer() #many=True
+    ingredients = IngredientSerializer() #many=True
     tags = TagSerializer() #many=True
 
     class Meta:
         model = Recipe
         fields = (
             'id', 'author', 'name', 'image', 'description',
-            'ingredient', 'tags', 'cooking_time', 'pub_date'
+            'ingredients', 'tags', 'cooking_time', 'pub_date'
         )
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к RecipeIngredient."""
 
-    ingredient = IngredientSerializer() #many=True
+    ingredients = IngredientSerializer() #many=True
     recipe = RecipeSerializer() #many=True
 
     class Meta:
         model = RecipeIngredient
-        fields = ('id', 'ingredient', 'recipe', 'amount')
+        fields = ('id', 'ingredients', 'recipe', 'amount')

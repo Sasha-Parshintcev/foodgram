@@ -51,7 +51,7 @@ class Ingredient(models.Model):
         ]
 
     def __str__(self):
-        return self.name
+        return self.name[:TEXT_LENGTH_LIMIT]
 
 
 class Recipe(models.Model):
@@ -78,7 +78,7 @@ class Recipe(models.Model):
         'Описание',
         help_text='Описание и инструкция по приготовлению блюда'
     )
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
         help_text='Продукты для приготовления блюда по рецепту',
@@ -118,7 +118,7 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     """Модель ингредиентов для рецепта."""
-    ingredient = models.ForeignKey(
+    ingredients = models.ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
         help_text='Выберите ингредиент',
@@ -139,4 +139,29 @@ class RecipeIngredient(models.Model):
         verbose_name_plural = 'Ингредиенты рецепта'
 
     def __str__(self):
-        return self.ingredient.name
+        return self.ingredient.name[:TEXT_LENGTH_LIMIT]
+
+
+class Follow(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='follower',
+        verbose_name='Пользователь')
+    following = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='following',
+        verbose_name='Автор')
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'following'],
+                                    name='user_following')
+        ]
+
+    def __str__(self):
+        return (f'{self.user[:TEXT_LENGTH_LIMIT]}'
+                f'подписался на {self.following[:TEXT_LENGTH_LIMIT]}')
