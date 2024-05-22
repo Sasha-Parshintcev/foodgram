@@ -46,3 +46,37 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = ('id', 'ingredients', 'recipe', 'amount')
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    """Сериализатор подписок."""
+    user = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+        default=serializers.CurrentUserDefault()
+    )
+    following = serializers.SlugRelatedField(
+        slug_field='username',
+        queryset=User.objects.all()
+    )
+
+    def validate(self, data):
+        """Проверка создание подписки на самого себя и на дубликат подписки."""
+        follower = self.context['request'].user
+        following = data.get('following')
+
+        if follower == following:
+            raise serializers.ValidationError(
+                'Нельзя создать подписку на самого себя.'
+            )
+
+        if Follow.objects.filter(user=follower, following=following).exists():
+            raise serializers.ValidationError(
+                'Подписка на данного пользователя уже существует.'
+            )
+
+        return data
+
+    class Meta:
+        model = Follow
+        fields = ('user', 'following',)
