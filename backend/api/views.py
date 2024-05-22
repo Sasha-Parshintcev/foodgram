@@ -27,3 +27,11 @@ class IngredientViewSet(ListCreateDestroyViewSet):
     # search_fields = ('name',)
 
 
+class RecipeViewSet(ListCreateDestroyViewSet):
+    """ViewSet для работы с рецептом."""
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    # permission_classes
+    # lookup_field = 'slug'
+    # filter_backends = (filters.SearchFilter,)
+    # search_fields = ('name',)
