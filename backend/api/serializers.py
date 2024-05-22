@@ -4,7 +4,7 @@ import datetime as dt
 from rest_framework import serializers
 # from rest_framework.validators import UniqueTogetherValidator
 
-from food.models import Tag, Ingredient, Recipe, RecipeIngredient
+from food.models import Tag, Ingredient, Recipe, RecipeIngredient, Follow
 
 
 class TagSerializer(serializers.ModelSerializer):

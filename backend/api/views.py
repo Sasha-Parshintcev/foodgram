@@ -1,12 +1,13 @@
 from django.shortcuts import render
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, status, viewsets, mixins
 
-from food.models import Tag, Ingredient, Recipe, RecipeIngredient
+from food.models import Tag, Ingredient, Recipe, RecipeIngredient, Follow
 from .serializers import (
     TagSerializer,
     IngredientSerializer,
     RecipeSerializer,
-    RecipeIngredientSerializer
+    # RecipeIngredientSerializer,
+    FollowSerializer
 )
 
 class TagViewSet(ListCreateDestroyViewSet):
@@ -37,6 +38,27 @@ class RecipeViewSet(ListCreateDestroyViewSet):
     # lookup_field = 'slug'
     # filter_backends = (filters.SearchFilter,)
     # search_fields = ('name',)
+
+
+class FollowViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
+    """Вьюсет фолловера."""
+    queryset = Follow.objects.all()
+    serializer_class = FollowSerializer
+    # permission_classes = (permissions.IsAuthenticated,)
+    # filter_backends = (filters.SearchFilter,)
+    search_fields = ('user__username', 'following__username',)
+
+    def get_queryset(self):
+        """Получение подписок."""
+        return get_object_or_404(User, username=self.request.user).follower
+
+    def perform_create(self, serializer):
+        """Сохраняет объект, указывая пользователя."""
+        serializer.save(user=self.request.user)
 
 
 # class RecipeIngredientViewSet(ListCreateDestroyViewSet):
