@@ -12,7 +12,8 @@ class Tag(models.Model):
     """Модель ингредиента."""
     name = models.CharField(
         'Название',
-        max_length=20
+        max_length=20,
+        unique=True
         
     )
     slug = models.SlugField(

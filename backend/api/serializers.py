@@ -15,3 +15,11 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
+class IngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для запросов к Ingredient."""
+    
+    measurement_unit = GenreSerializer(many=True)
+
+    class Meta:
+        model = Title
+        fields = ('name', 'measurement_unit')
