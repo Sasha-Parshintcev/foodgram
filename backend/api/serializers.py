@@ -17,8 +17,6 @@ class TagSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Ingredient."""
-    
-    measurement_unit = GenreSerializer(many=True)
 
     class Meta:
         model = Title
