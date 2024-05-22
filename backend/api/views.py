@@ -39,10 +39,10 @@ class RecipeViewSet(ListCreateDestroyViewSet):
     # search_fields = ('name',)
 
 
-class RecipeIngredientViewSet(ListCreateDestroyViewSet):
-    """ViewSet для работы с ингредиентами."""
-    queryset = RecipeIngredient.objects.all()
-    serializer_class = RecipeIngredientSerializer
+# class RecipeIngredientViewSet(ListCreateDestroyViewSet):
+#     """ViewSet для работы с ингредиентами."""
+#     queryset = RecipeIngredient.objects.all()
+#     serializer_class = RecipeIngredientSerializer
     # permission_classes
     # lookup_field = 'slug'
     # filter_backends = (filters.SearchFilter,)
