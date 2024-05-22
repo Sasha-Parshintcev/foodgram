@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from rest_framework import filters, status, viewsets
 
-from food.models import Tag, Ingredient, Recipe
+from food.models import Tag, Ingredient, Recipe, RecipeIngredient
 from .serializers import (
     TagSerializer,
     IngredientSerializer,
-    RecipeSerializer
+    RecipeSerializer,
+    RecipeIngredientSerializer
 )
 
 class TagViewSet(ListCreateDestroyViewSet):
@@ -32,6 +33,16 @@ class RecipeViewSet(ListCreateDestroyViewSet):
     """ViewSet для работы с рецептом."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    # permission_classes
+    # lookup_field = 'slug'
+    # filter_backends = (filters.SearchFilter,)
+    # search_fields = ('name',)
+
+
+class RecipeIngredientViewSet(ListCreateDestroyViewSet):
+    """ViewSet для работы с ингредиентами."""
+    queryset = RecipeIngredient.objects.all()
+    serializer_class = RecipeIngredientSerializer
     # permission_classes
     # lookup_field = 'slug'
     # filter_backends = (filters.SearchFilter,)
