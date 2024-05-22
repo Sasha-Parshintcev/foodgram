@@ -78,7 +78,7 @@ class Recipe(models.Model):
         'Описание',
         help_text='Описание и инструкция по приготовлению блюда'
     )
-    Ingredients = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
         help_text='Продукты для приготовления блюда по рецепту',

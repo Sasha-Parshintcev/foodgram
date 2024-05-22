@@ -25,7 +25,13 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Recipe."""
+    
+    ingredients = IngredientSerializer()
+    tags = TagSerializer()
 
     class Meta:
-        model = Tag
-        fields = ('name', 'slug')
+        model = Recipe
+        fields = (
+            'author', 'name', 'image', 'description',
+            'ingredients', 'tags', 'cooking_time', 'pub_date'
+        )
