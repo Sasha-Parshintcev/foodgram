@@ -12,7 +12,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('name', 'slug')
+        fields = ('id', 'name', 'slug')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -20,18 +20,29 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ('name', 'measurement_unit')
+        fields = ('id', 'name', 'measurement_unit')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Recipe."""
     
-    ingredients = IngredientSerializer()
-    tags = TagSerializer()
+    ingredient = IngredientSerializer() #many=True
+    tags = TagSerializer() #many=True
 
     class Meta:
         model = Recipe
         fields = (
-            'author', 'name', 'image', 'description',
-            'ingredients', 'tags', 'cooking_time', 'pub_date'
+            'id', 'author', 'name', 'image', 'description',
+            'ingredient', 'tags', 'cooking_time', 'pub_date'
         )
+
+
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для запросов к RecipeIngredient."""
+
+    ingredient = IngredientSerializer() #many=True
+    recipe = RecipeSerializer() #many=True
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ('id', 'ingredient', 'recipe', 'amount')
