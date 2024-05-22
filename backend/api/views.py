@@ -7,7 +7,8 @@ from .serializers import (
     IngredientSerializer,
     RecipeSerializer,
     # RecipeIngredientSerializer,
-    FollowSerializer
+    FollowSerializer,
+    UserSerializer
 )
 
 class TagViewSet(ListCreateDestroyViewSet):
@@ -60,6 +61,11 @@ class FollowViewSet(
         """Сохраняет объект, указывая пользователя."""
         serializer.save(user=self.request.user)
 
+
+class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет пользователя."""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 # class RecipeIngredientViewSet(ListCreateDestroyViewSet):
 #     """ViewSet для работы с ингредиентами."""
