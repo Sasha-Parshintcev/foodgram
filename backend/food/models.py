@@ -10,8 +10,8 @@ TEXT_LENGTH_LIMIT=10
 
 class Tag(models.Model):
     """Модель ингредиента."""
-    tag = models.CharField(
-        'Тег',
+    name = models.CharField(
+        'Название',
         max_length=20
         
     )
