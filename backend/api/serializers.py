@@ -4,7 +4,7 @@ import datetime as dt
 from rest_framework import serializers
 # from rest_framework.validators import UniqueTogetherValidator
 
-from food.models import Tag, Ingredient, Recipe, RecipeIngredient, Follow
+from food.models import Tag, Ingredient, Recipe, RecipeIngredient, Follow, User
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -80,3 +80,10 @@ class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = ('user', 'following',)
+
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    """Сериализатор пользователя."""
+    class Meta:
+        model = User
+        fields = ('url', 'username', 'email', 'groups',)
