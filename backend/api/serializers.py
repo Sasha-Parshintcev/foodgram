@@ -118,3 +118,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
             if getattr(user_with_data_username, "email") != email:
                 raise ValidationError('Такой username занят.')
         return data
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    """Сериализатор для получения токена."""
+    confirmation_code = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
+
+
