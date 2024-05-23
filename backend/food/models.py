@@ -142,8 +142,8 @@ class RecipeIngredient(models.Model):
         return self.ingredient.name[:TEXT_LENGTH_LIMIT]
 
 
-class Favorites(models.Model):
-    
+# class Favorites(models.Model):
+
 
 
 class Follow(models.Model):

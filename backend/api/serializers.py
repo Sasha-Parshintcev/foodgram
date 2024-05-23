@@ -87,3 +87,34 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = ('url', 'username', 'email', 'groups',)
+
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    """Сериализатор для регистрации новых пользоватлелей и
+    получения письма с кодом подтверждения."""
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+$', max_length=150, required=True)
+    email = serializers.EmailField(max_length=254)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email')
+
+    def validate_username(self, value):
+        username_validator(value)
+        return value
+
+    def validate(self, data):
+        username = data['username']
+        email = data['email']
+        user_with_data_email = User.objects.filter(
+            email=email).first()
+        user_with_data_username = User.objects.filter(
+            username=username).first()
+        if user_with_data_email:
+            if getattr(user_with_data_email, "username") != username:
+                raise ValidationError('Такой email занят.')
+        if user_with_data_username:
+            if getattr(user_with_data_username, "email") != email:
+                raise ValidationError('Такой username занят.')
+        return data
