@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from food.models import Tag, Ingredient, Recipe, RecipeIngredient, Follow, User
+from users.validators import username_validator
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -88,7 +89,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'username', 'email', 'first_name',
-            'last_name', 'bio', 'role'
+            'last_name'
         )
         validators = [
             UniqueTogetherValidator(
@@ -110,9 +111,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email')
 
-    def validate_username(self, value):
-        username_validator(value)
-        return value
+    # def username_validator(self, value):
+    # forbidden_name = 'me'
+    # if value == forbidden_name:
+    #     raise ValidationError(
+    #         'Использовать "me" в качестве username запрещено.')
 
     def validate(self, data):
         username = data['username']
