@@ -143,29 +143,3 @@ class RecipeIngredient(models.Model):
 
 
 # class Favorites(models.Model):
-
-
-
-class Follow(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='follower',
-        verbose_name='Пользователь')
-    following = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='Автор')
-
-    class Meta:
-        verbose_name = 'Подписка'
-        verbose_name_plural = 'Подписки'
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'following'],
-                                    name='user_following')
-        ]
-
-    def __str__(self):
-        return (f'{self.user[:TEXT_LENGTH_LIMIT]}'
-                f'подписался на {self.following[:TEXT_LENGTH_LIMIT]}')
