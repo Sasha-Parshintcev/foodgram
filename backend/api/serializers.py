@@ -1,8 +1,8 @@
 import datetime as dt
 
-# from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
-# from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import UniqueTogetherValidator
 
 from food.models import Tag, Ingredient, Recipe, RecipeIngredient, Follow, User
 
@@ -82,11 +82,21 @@ class FollowSerializer(serializers.ModelSerializer):
         fields = ('user', 'following',)
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    """Сериализатор пользователя."""
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для запросов к переопределенной модели User."""
     class Meta:
         model = User
-        fields = ('url', 'username', 'email', 'groups',)
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role'
+        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=User.objects.all(),
+                fields=('username', 'email'),
+                message='Такие username, email уже есть!',
+            )
+        ]
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
