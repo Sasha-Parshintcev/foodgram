@@ -5,7 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 User = get_user_model()
 
 
-TEXT_LENGTH_LIMIT=10
+TEXT_LENGTH_LIMIT=20
 MIN_COOK_TIME=1
 
 
@@ -25,6 +25,9 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+
+    def __str__(self):
+        return self.name[:TEXT_LENGTH_LIMIT]
 
 
 class Ingredient(models.Model):
@@ -119,15 +122,15 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     """Модель ингредиентов для рецепта."""
-    ingredients = models.ForeignKey(
-        Ingredient,
-        related_name='ingredients_list',
-        verbose_name='Рецепты',
-        on_delete=models.CASCADE
-    )
     recipe = models.ForeignKey(
         Recipe,
         related_name='ingredient_in_recipe',
+        verbose_name='Рецепты',
+        on_delete=models.CASCADE
+    )
+    ingredients = models.ForeignKey(
+        Ingredient,
+        related_name='ingredients_list',
         verbose_name='Ингредиенты',
         on_delete=models.CASCADE
     )
@@ -137,11 +140,17 @@ class RecipeIngredient(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Ингредиент рецепта'
-        verbose_name_plural = 'Ингредиенты рецепта'
+        constraints = (
+            models.UniqueConstraint(
+                fields=('ingredients', 'recipe'),
+                name='unique_ingredient'
+            ),
+        )
+        verbose_name = 'Ингредиенты рецепта'
+        verbose_name_plural = 'Ингредиенты рецептов'
 
     def __str__(self):
-        return self.ingredient.name[:TEXT_LENGTH_LIMIT]
+        return f'{self.recipe} - {self.ingredient}'
 
 
 # class Favorites(models.Model):
