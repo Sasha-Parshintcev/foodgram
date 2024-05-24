@@ -6,6 +6,7 @@ User = get_user_model()
 
 
 TEXT_LENGTH_LIMIT=10
+MIN_COOK_TIME=1
 
 
 class Tag(models.Model):
@@ -70,11 +71,11 @@ class Recipe(models.Model):
     image = models.ImageField(
         'Изображение',
         help_text='Загрузите изображение для вашего рецепта',
-        upload_to='images/',
+        upload_to='recipes/',
         null=True,
         default=None
     )
-    description = models.TextField(
+    text = models.TextField(
         'Описание',
         help_text='Описание и инструкция по приготовлению блюда'
     )
@@ -89,17 +90,19 @@ class Recipe(models.Model):
         help_text='Можно установить несколько тегов на один рецепт',
         verbose_name='Теги',
         blank=True,
+        null=True,
         related_name='recipes'
     )
-    cooking_time = models.IntegerField(
-        'Время приготовления',
-        help_text='Время приготовления (в минутах), целое число',
-        validators=[
+    cooking_time = models.PositiveSmallIntegerField(
+        null=False,
+        verbose_name='Время приготовления',
+        help_text='Введите время приготовления',
+        validators=(
             MinValueValidator(
-                1,
-                'Время приготовления не может быть меньше 1 минуты',
-            )
-        ]
+                MIN_COOK_TIME,
+                f'Минимальное время: {MIN_COOK_TIME} минута'
+            ),
+        )
     )
     pub_date = models.DateTimeField(
         'Дата публикации',
@@ -120,18 +123,19 @@ class RecipeIngredient(models.Model):
     """Модель ингредиентов для рецепта."""
     ingredients = models.ForeignKey(
         Ingredient,
-        verbose_name='Ингредиент',
-        help_text='Выберите ингредиент',
-        on_delete=models.CASCADE,
+        related_name='ingredients_list',
+        verbose_name='Рецепты',
+        on_delete=models.CASCADE
     )
     recipe = models.ForeignKey(
         Recipe,
-        related_name='ingredients',
-        on_delete=models.CASCADE,
+        related_name='ingredient_in_recipe',
+        verbose_name='Ингредиенты',
+        on_delete=models.CASCADE
     )
     amount = models.IntegerField(
         verbose_name='Количество',
-        help_text='Требуемое количество для рецепта (целое число)',
+        help_text='Требуемое количество для рецепта (целое число)'
     )
 
     class Meta:
