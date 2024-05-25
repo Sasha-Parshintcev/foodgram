@@ -19,8 +19,11 @@ class User(AbstractUser):
     username = models.CharField(
         'Логин',
         max_length=150,
-        validators = [UnicodeUsernameValidator()]
-        unique=True
+        validators = [UnicodeUsernameValidator()],
+        unique=True,
+        error_messages={
+            'unique': 'Пользователь с таким username уже существует.',
+        }
     )
     first_name = models.CharField(
         'Имя',

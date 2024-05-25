@@ -103,7 +103,7 @@ STATIC_ROOT = BASE_DIR / 'backend_static'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-ROOT_URLCONF = 'foodgram.urls'
+ROOT_URLCONF = 'config.urls'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -143,7 +143,7 @@ REST_FRAMEWORK = {
 }
 
 
-SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-   'AUTH_HEADER_TYPES': ('Bearer',),
-} 
+# SIMPLE_JWT = {
+#    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+#    'AUTH_HEADER_TYPES': ('Bearer',),
+# } 

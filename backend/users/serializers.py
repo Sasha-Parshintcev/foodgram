@@ -1,20 +1,20 @@
-import datetime as dt
+# import datetime as dt
 
-from django.core.exceptions import ValidationError
+# from django.core.exceptions import ValidationError
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
+# from rest_framework.validators import UniqueTogetherValidator
 
-from .models import Follow, User
+from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор пользователя."""
-    is_subscribed = serializers.SerializerMethodField()
+    # is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'password', 'is_subscribed')
+                  'last_name')
         # extra_kwargs = {'password': {'write_only': True},
         #                 'is_subscribed': {'read_only': True}}
 
