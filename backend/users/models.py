@@ -1,6 +1,6 @@
 from django.db import models
-
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
 TEXT_LENGTH_LIMIT=20
@@ -19,6 +19,7 @@ class User(AbstractUser):
     username = models.CharField(
         'Логин',
         max_length=150,
+        validators = [UnicodeUsernameValidator()]
         unique=True
     )
     first_name = models.CharField(
@@ -34,7 +35,7 @@ class User(AbstractUser):
         verbose_name='Пароль'
     )
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ('username', 'password', 'first_name', 'last_name')
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
 
     class Meta:
         verbose_name = 'Пользователь'
