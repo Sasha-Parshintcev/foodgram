@@ -19,6 +19,10 @@ class UserSerializer(serializers.ModelSerializer):
                         'is_subscribed': {'read_only': True}}
 
     def create(self, validated_data):
+        """
+        Функция create создает нового пользователя
+        и генерирует токен авторизации для него.
+        """
         user = User.objects.create_user(**validated_data)
         Token.objects.create(user=user)
         return user
