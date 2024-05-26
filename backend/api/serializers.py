@@ -1,10 +1,58 @@
+from rest_framework import serializers
+
+from users.models import User, Subscription
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор пользователя."""
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'is_subscribed')
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    """Сериализатор подписок."""
+    user = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+        default=serializers.CurrentUserDefault()
+    )
+    subscribing = serializers.SlugRelatedField(
+        slug_field='username',
+        queryset=User.objects.all()
+    )
+
+    def validate(self, data):
+        """Проверка создание подписки на самого себя и на дубликат подписки."""
+        subscriber = self.context['request'].user
+        subscribing = data.get('subscribing')
+
+        if subscriber == subscribing:
+            raise serializers.ValidationError(
+                'Нельзя создать подписку на самого себя.'
+            )
+
+        if Subscription.objects.filter(user=subscriber, following=subscribing).exists():
+            raise serializers.ValidationError(
+                'Подписка на данного пользователя уже существует.'
+            )
+
+        return data
+
+    class Meta:
+        model = Subscription
+        fields = ('user', 'subscribing',)
+
 # import datetime as dt
 
 # from django.core.exceptions import ValidationError
 # from rest_framework import serializers
 # from rest_framework.validators import UniqueTogetherValidator
 
-# from food.models import Tag, Ingredient, Recipe, RecipeIngredient, Follow, User
+# from food.models import Tag, Ingredient, Recipe, RecipeIngredient, Follow
 # from users.validators import username_validator
 
 
@@ -49,38 +97,7 @@
 #         fields = ('id', 'ingredients', 'recipe', 'amount')
 
 
-# # class FollowSerializer(serializers.ModelSerializer):
-# #     """Сериализатор подписок."""
-# #     user = serializers.SlugRelatedField(
-# #         read_only=True,
-# #         slug_field='username',
-# #         default=serializers.CurrentUserDefault()
-# #     )
-# #     following = serializers.SlugRelatedField(
-# #         slug_field='username',
-# #         queryset=User.objects.all()
-# #     )
-
-# #     def validate(self, data):
-# #         """Проверка создание подписки на самого себя и на дубликат подписки."""
-# #         follower = self.context['request'].user
-# #         following = data.get('following')
-
-# #         if follower == following:
-# #             raise serializers.ValidationError(
-# #                 'Нельзя создать подписку на самого себя.'
-# #             )
-
-# #         if Follow.objects.filter(user=follower, following=following).exists():
-# #             raise serializers.ValidationError(
-# #                 'Подписка на данного пользователя уже существует.'
-# #             )
-
-# #         return data
-
-# #     class Meta:
-# #         model = Follow
-# #         fields = ('user', 'following',)
+# # 
 
 
 # # class RegistrationSerializer(serializers.ModelSerializer):

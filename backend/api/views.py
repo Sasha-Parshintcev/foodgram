@@ -1,3 +1,15 @@
+from djoser import views as djoser_views
+
+from users.models import User
+from .serializers import UserSerializer
+
+
+class UserViewSet(djoser_views.UserViewSet):
+    """Вьюсет для работы с пользователями."""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
 # from django.shortcuts import render
 # from rest_framework import filters, status, viewsets, mixins
 
@@ -15,10 +27,10 @@
 #     """ViewSet для работы с тегами."""
 #     queryset = Tag.objects.all()
 #     serializer_class = TagSerializer
-#     # permission_classes
-#     # lookup_field = 'slug'
-#     # filter_backends = (filters.SearchFilter,)
-#     # search_fields = ('name',)
+    # permission_classes
+    # lookup_field = 'slug'
+    # filter_backends = (filters.SearchFilter,)
+    # search_fields = ('name',)
 
 
 # class IngredientViewSet(ListCreateDestroyViewSet):

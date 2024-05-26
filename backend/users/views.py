@@ -1,14 +1,23 @@
-from djoser import views as djoser_views
+# from djoser import views as djoser_views
 
-from .models import User
-from .serializers import UserSerializer
+# from .models import User
+# from .serializers import UserSerializer
 
 
-сlass UserViewSet(djoser_views.UserViewSet):
-    """Вьюсет для работы с пользователями."""
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+# class UserViewSet(djoser_views.UserViewSet):
+#     """Вьюсет для работы с пользователями."""
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
+
+
     
+
+
+
+
+
+
+
 
 
 
