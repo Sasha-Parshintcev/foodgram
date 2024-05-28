@@ -38,9 +38,8 @@ class User(AbstractUser):
         verbose_name='Пароль'
     )
     avatar = models.ImageField(
-        'Аватар пользователя',
-        help_text='Загрузите изображение для вашего аватара',
         upload_to='avatars/',
+        blank=True,
         null=True,
         default=None
     )
@@ -62,21 +61,22 @@ class Subscription(models.Model):
         on_delete=models.CASCADE,
         related_name='subscriber',
         verbose_name='Пользователь')
-    subscribing = models.ForeignKey(
+    author = models.ForeignKey(
         User,
+        verbose_name='Подписка',
+        related_name='followed',
         on_delete=models.CASCADE,
-        related_name='subscribing',
-        verbose_name='Автор')
+        help_text='Подписаться на автора рецепта')
 
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = [
-            models.UniqueConstraint(fields=['user', 'subscribing'],
-                                    name='user_subscribing')
+            models.UniqueConstraint(fields=['user', 'author'],
+                                    name='user_author')
         ]
 
     def __str__(self):
         return (f'{self.user[:TEXT_LENGTH_LIMIT]}'
-                f'подписался на {self.subscribing[:TEXT_LENGTH_LIMIT]}')
+                f'подписался на {self.author[:TEXT_LENGTH_LIMIT]}')
 

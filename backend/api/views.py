@@ -8,7 +8,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 
 from users.models import User, Subscription
-from .serializers import UserSerializer, SubscriptionSerializer, AuthTokenSerializer
+from .serializers import UserSerializer
+# SubscriptionSerializer, AuthTokenSerializer
 
 
 class UserViewSet(djoser_views.UserViewSet):
@@ -22,81 +23,81 @@ class UserViewSet(djoser_views.UserViewSet):
 
         return super().me(request, *args, **kwargs)
 
-    @action(['post', 'delete'],
-            detail=True,
-            permission_classes=(IsAuthenticated,))
-    def subscribe(self, request, id):
-        subscribing = get_object_or_404(User, pk=id)
+    # @action(['post', 'delete'],
+    #         detail=True,
+    #         permission_classes=(IsAuthenticated,))
+    # def subscribe(self, request, id):
+    #     subscribing = get_object_or_404(User, pk=id)
 
-        if request.method == 'POST':
-            serializer = SubscriptionSerializer(
-                data={'user': request.user.pk,
-                      'subscribing': subscribing.pk},
-                context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+    #     if request.method == 'POST':
+    #         serializer = SubscriptionSerializer(
+    #             data={'user': request.user.pk,
+    #                   'subscribing': subscribing.pk},
+    #             context={'request': request})
+    #         serializer.is_valid(raise_exception=True)
+    #         serializer.save()
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        subscription = Subscription.objects.filter(user=request.user,
-                                                   subscribing=subscribing)
-        if subscription.exists():
-            subscription.delete()
+    #     subscription = Subscription.objects.filter(user=request.user,
+    #                                                subscribing=subscribing)
+    #     if subscription.exists():
+    #         subscription.delete()
 
-            return Response(status=status.HTTP_204_NO_CONTENT)
+    #         return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response({'errors': 'Вы не были подписаны ранее!'},
-                        status=status.HTTP_400_BAD_REQUEST)
+    #     return Response({'errors': 'Вы не были подписаны ранее!'},
+    #                     status=status.HTTP_400_BAD_REQUEST)
 
-    @action(['get'],
-            detail=False,
-            permission_classes=(IsAuthenticated,))
-    def subscriptions(self, request):
-        queryset = User.objects.filter(
-            subscribing__user=request.user).prefetch_related('recipes')
-        pages = self.paginate_queryset(queryset)
-        serializer = SubscriptionSerializer(pages,
-                                            many=True,
-                                            context={'request': request})
+    # @action(['get'],
+    #         detail=False,
+    #         permission_classes=(IsAuthenticated,))
+    # def subscriptions(self, request):
+    #     queryset = User.objects.filter(
+    #         subscribing__user=request.user).prefetch_related('recipes')
+    #     pages = self.paginate_queryset(queryset)
+    #     serializer = SubscriptionSerializer(pages,
+    #                                         many=True,
+    #                                         context={'request': request})
 
-        return self.get_paginated_response(serializer.data)
+    #     return self.get_paginated_response(serializer.data)
 
 
-class TokenUserAuth(ObtainAuthToken):
-    serializer_class = AuthTokenSerializer
-    http_method_names = ["post", ]
+# class TokenUserAuth(ObtainAuthToken):
+#     serializer_class = AuthTokenSerializer
+#     http_method_names = ["post", ]
 
-    def post(self, request, *args, **kwargs):
-        use_request = request.path.split('/')[-2]
-        if use_request == 'login':
-            serializer = self.serializer_class(data=request.data,
-                                               context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            user = serializer.validated_data['user']
-            token, created = Token.objects.get_or_create(user=user)
+#     def post(self, request, *args, **kwargs):
+#         use_request = request.path.split('/')[-2]
+#         if use_request == 'login':
+#             serializer = self.serializer_class(data=request.data,
+#                                                context={'request': request})
+#             serializer.is_valid(raise_exception=True)
+#             user = serializer.validated_data['user']
+#             token, created = Token.objects.get_or_create(user=user)
 
-            return Response({
-                'auth_token': token.key,
-            })
-        elif use_request == 'logout':
-            auth = request.headers.get('Authorization')
-            if auth:
-                token = Token.objects.filter(key=auth[6:])
-                if token.exists():
-                    token.delete()
-                    return Response(status=204)
-                return Response(
-                    status=404,
-                    data=dict(
-                        detail='Учетные данные не найдены'
-                    )
-                )
-            return Response(
-                status=401,
-                data=dict(
-                    detail='Учетные данные не были предоставлены.'
-                )
-            )
+#             return Response({
+#                 'auth_token': token.key,
+#             })
+#         elif use_request == 'logout':
+#             auth = request.headers.get('Authorization')
+#             if auth:
+#                 token = Token.objects.filter(key=auth[6:])
+#                 if token.exists():
+#                     token.delete()
+#                     return Response(status=204)
+#                 return Response(
+#                     status=404,
+#                     data=dict(
+#                         detail='Учетные данные не найдены'
+#                     )
+#                 )
+#             return Response(
+#                 status=401,
+#                 data=dict(
+#                     detail='Учетные данные не были предоставлены.'
+#                 )
+#             )
 
 # from django.shortcuts import render
 # from rest_framework import filters, status, viewsets, mixins

@@ -1,7 +1,8 @@
 from django.urls import include, path, re_path
 from rest_framework.routers import DefaultRouter
 
-from .views import UserViewSet, TokenUserAuth
+from .views import UserViewSet
+# , TokenUserAuth
 
 
 
@@ -14,11 +15,10 @@ api_v1.register('users', UserViewSet, basename='users')
 
 urlpatterns = [
     path('', include(api_v1.urls)),
-    # path('api-token-auth/', views.obtain_auth_token),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
-    re_path(r'^auth/token/(login|logout)/', TokenUserAuth.as_view()),
-    *api_v1.urls
+    # re_path(r'^auth/token/(login|logout)/', TokenUserAuth.as_view()),
+    # *api_v1.urls
 ]
 
 
