@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
 from djoser import views as djoser_views
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -8,7 +9,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 
 from users.models import User, Subscription
-from .serializers import UserSerializer
+from .serializers import UserSerializer, AvatarSerializer
 # SubscriptionSerializer, AuthTokenSerializer
 
 
@@ -25,14 +26,24 @@ class UserViewSet(djoser_views.UserViewSet):
             return Response(serializer.data)
     
     @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
+    @login_required
     def avatar(self, request):
         user = request.user
-        avatar_url = user.avatar.url_path
-        response_data = {
-        '/avatars': avatar_url
-        }
-
-        return Response(response_data)
+        if request.method == 'PUT':
+            serializer = AvatarSerializer(data=request.data)
+            if serializer.is_valid():
+                user.avatar = serializer.validated_data['avatar']
+                user.save()
+                return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'GET':
+            return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
+        elif request.method == 'DELETE':
+            user.avatar = None
+            user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
     
     # @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
     # def avatar(self, request):

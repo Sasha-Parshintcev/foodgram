@@ -23,7 +23,7 @@ class Base64ImageField(serializers.ImageField):
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор пользователя."""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
-    avatar = Base64ImageField(required=False, allow_null=True)
+    avatar = Base64ImageField(required=False, allow_null=True, read_only=True)
     extra_kwargs = {'password': {'write_only': True},
                         'is_subscribed': {'read_only': True}}
 
@@ -40,6 +40,33 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+    
+
+class AvatarSerializer(serializers.Serializer):
+    avatar = serializers.ImageField(required=True)
+
+    def validate_avatar(self, value):
+        if value.size > 1024 * 1024:
+            raise serializers.ValidationError("Максимальный размер аватара 1MB.")
+        return value
+    
+# class AvatarSerializer(serializers.Serializer):
+#        avatar = serializers.ImageField()
+   
+#        def update(self, instance, validated_data):
+#            instance.profile.avatar = validated_data.get('avatar', instance.profile.avatar)
+#            instance.save()
+#            return instance
+       
+#        def destroy(self, instance):
+#            instance.profile.avatar = None
+#            instance.profile.save()
+#            return instance
+       
+#        class Meta:
+#         model = User
+#         fields = ('email', 'id', 'username', 'first_name',
+#                   'last_name', 'is_subscribed', 'avatar',)
     
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -126,18 +153,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 #         fields = ('user', 'subscribing',)
 
 
-# class AvatarSerializer(serializers.Serializer):
-#        avatar = serializers.ImageField()
-   
-#        def update(self, instance, validated_data):
-#            instance.profile.avatar = validated_data.get('avatar', instance.profile.avatar)
-#            instance.save()
-#            return instance
-       
-#        def destroy(self, instance):
-#            instance.profile.avatar = None
-#            instance.profile.save()
-#            return instance
+
 
 
 
