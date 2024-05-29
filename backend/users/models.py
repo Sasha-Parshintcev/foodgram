@@ -41,7 +41,8 @@ class User(AbstractUser):
         upload_to='avatars/',
         blank=True,
         null=True,
-        default=None
+        default="avatars/default.png"
+        # default=None
     )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username', 'first_name', 'last_name')

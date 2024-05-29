@@ -19,10 +19,30 @@ class UserViewSet(djoser_views.UserViewSet):
 
 
     @action(['get'], detail=False)
-    def me(self, request, *args, **kwargs):
+    def me(self, request):
+        if request.method == 'GET':
+            serializer = self.serializer_class(request.user)
+            return Response(serializer.data)
+    
+    @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
+    def avatar(self, request):
+        user = request.user
+        avatar_url = user.avatar.url_path
+        response_data = {
+        '/avatars': avatar_url
+        }
 
-        return super().me(request, *args, **kwargs)
+        return Response(response_data)
+    
+    # @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
+    # def avatar(self, request):
+    #     user = request.user
+    #     avatar_url = user.avatar.url_path
+    #     response_data = {
+    #     '/avatars': avatar_url
+    #     }
 
+    #     return Response(response_data)
     # @action(['post', 'delete'],
     #         detail=True,
     #         permission_classes=(IsAuthenticated,))
