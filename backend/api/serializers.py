@@ -45,6 +45,14 @@ class UserSerializer(serializers.ModelSerializer):
 class AvatarSerializer(serializers.Serializer):
     avatar = Base64ImageField(required=True, allow_null=True)
 
+    # def get_avatar(self, obj):
+    #     if obj.avatar:
+    #         return {'avatar': user.avatar.url}'
+    #     return None
+
+    class Meta:
+        fields = ('avatar',)
+
     # def validate_avatar(self, value):
     #     if value.size > 1024 * 1024:
     #         raise serializers.ValidationError("Максимальный размер аватара 1MB.")

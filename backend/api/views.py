@@ -21,7 +21,7 @@ class UserViewSet(djoser_views.UserViewSet):
 
     @action(['get'], detail=False)
     def me(self, request):
-        serializer = self.serializer_class(request.user)
+        serializer = UserSerializer(instance=request.user, context={'request': request})
         return Response(serializer.data)
 
     @action(methods=['put', 'delete'], detail=False, url_path='me/avatar')
@@ -37,7 +37,7 @@ class UserViewSet(djoser_views.UserViewSet):
             if serializer.is_valid():
                 user.avatar = serializer.validated_data['avatar']
                 user.save()
-                return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
+                return Response({"avatar": "http://sashamyhost.zapto.org/user.avatar.url"}, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.method == 'DELETE':
