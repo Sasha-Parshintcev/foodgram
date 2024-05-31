@@ -41,7 +41,7 @@ class UserViewSet(djoser_views.UserViewSet):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.method == 'DELETE':
-            user.avatar = 'users/image.png'
+            user.avatar = None
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         

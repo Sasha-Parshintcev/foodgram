@@ -41,8 +41,8 @@ class User(AbstractUser):
         upload_to='users/',
         blank=True,
         # null=True,
-        default='users/image.png'
-        # default=None
+        # default='users/image.png'
+        default=None
     )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
