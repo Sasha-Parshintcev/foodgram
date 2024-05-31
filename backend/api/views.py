@@ -21,28 +21,77 @@ class UserViewSet(djoser_views.UserViewSet):
 
     @action(['get'], detail=False)
     def me(self, request):
-        if request.method == 'GET':
-            serializer = self.serializer_class(request.user)
-            return Response(serializer.data)
-    
-    @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
-    @login_required
+        serializer = self.serializer_class(request.user)
+        return Response(serializer.data)
+
+    @action(methods=['put', 'delete'], detail=False, url_path='me/avatar')
     def avatar(self, request):
         user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {'detail': 'Учетные данные аутентификации не предоставлены.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        serializer = AvatarSerializer(data=request.data)
         if request.method == 'PUT':
-            serializer = AvatarSerializer(data=request.data)
             if serializer.is_valid():
                 user.avatar = serializer.validated_data['avatar']
                 user.save()
                 return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif request.method == 'GET':
-            return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            user.avatar = None
+            user.avatar = 'users/image.png'
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        
+
+    # @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
+    # @login_required
+    # def avatar(self, request, user):
+    #     if request.method == 'PUT':
+    #         if 'avatar' not in request.data:
+    #             return Response({'error': 'Не указано поле `avatar`'}, status=status.HTTP_400_BAD_REQUEST)
+
+    #         serializer = AvatarSerializer(data=request.data)
+    #         if serializer.is_valid():
+    #             user.avatar = serializer.validated_data['avatar']
+    #             user.save()
+    #             return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
+    #         else:
+    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     elif request.method == 'GET':
+    #         return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
+    #     elif request.method == 'DELETE':
+    #         user.avatar = None
+    #         user.save()
+    #         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+
+
+
+    # @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
+    # @login_required
+    # def avatar(self, request, user):
+    #     user = request.user
+    #     if request.method == 'PUT':
+    #         serializer = AvatarSerializer(data=request.data)
+    #         if serializer.is_valid():
+    #             user.avatar = serializer.validated_data['avatar']
+    #             user.save()
+    #             return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
+    #         else:
+    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     elif request.method == 'GET':
+    #         return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
+    #     elif request.method == 'DELETE':
+    #         user.avatar = None
+    #         user.save()
+    #         return Response(status=status.HTTP_204_NO_CONTENT)
         
     
     # @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))

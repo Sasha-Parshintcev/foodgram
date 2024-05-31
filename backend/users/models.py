@@ -38,10 +38,10 @@ class User(AbstractUser):
         verbose_name='Пароль'
     )
     avatar = models.ImageField(
-        upload_to='avatars/',
+        upload_to='users/',
         blank=True,
-        null=True,
-        default="avatars/default.png"
+        # null=True,
+        default='users/image.png'
         # default=None
     )
     USERNAME_FIELD = 'email'
