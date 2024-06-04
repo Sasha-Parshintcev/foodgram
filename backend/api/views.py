@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from djoser import views as djoser_views
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -17,9 +17,11 @@ class UserViewSet(djoser_views.UserViewSet):
     """Вьюсет для работы с пользователями."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (AllowAny,)
 
 
-    @action(['get'], detail=False)
+
+    @action(['get'], detail=False, permission_classes = (IsAuthenticated,))
     def me(self, request):
         serializer = UserSerializer(instance=request.user, context={'request': request})
         return Response(serializer.data)
