@@ -8,7 +8,24 @@ from rest_framework.exceptions import ValidationError
 import api.serializers
 
 from users.models import User, Subscription
+from food.models import Tag
 
+
+class TagSerializer(serializers.ModelSerializer):
+    """Сериализатор для запросов к Tag."""
+
+    class Meta:
+        model = Tag
+        fields = ('id', 'name', 'slug')
+
+class TagListSerializer(serializers.ModelSerializer):
+    """Сериализатор для запросов к Tag."""
+    tags = TagSerializer(many=True)
+
+    class Meta:
+        model = Tag
+        fields = ('tags',)
+    
 
 class Base64ImageField(serializers.ImageField):
     def to_internal_value(self, data):

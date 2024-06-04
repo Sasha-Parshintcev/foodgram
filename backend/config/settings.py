@@ -123,7 +123,7 @@ DJOSER = {
     'HIDE_USERS': False,
     'SERIALIZERS': {
         'user': 'api.serializers.UserSerializer',
-        'user_create': 'api.serializers.UserSerializer',
+        # 'user_create': 'api.serializers.UserSerializer',
         'current_user': 'api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
@@ -142,9 +142,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 
-    'PAGE_SIZE': 5,
+    # 'PAGE_SIZE': 5,
 }
 
 

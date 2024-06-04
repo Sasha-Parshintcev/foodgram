@@ -1,23 +1,44 @@
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required
+# from django.shortcuts import get_object_or_404
+# from django.contrib.auth.decorators import login_required
 from djoser import views as djoser_views
-from rest_framework import status, viewsets
+from rest_framework import status, filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.pagination import LimitOffsetPagination
+# from rest_framework.authtoken.models import Token
+# from rest_framework.authtoken.views import ObtainAuthToken
 
-from users.models import User, Subscription
-from .serializers import UserSerializer, AvatarSerializer
+from users.models import User
+# , Subscription
+from food.models import Tag
+from .serializers import UserSerializer, AvatarSerializer, TagSerializer, TagListSerializer
 # SubscriptionSerializer, AuthTokenSerializer
 
+
+class TagViewSet(viewsets.ModelViewSet):
+    """ViewSet для работы с тегами."""
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    # pagination_class = None
+    permission_classes = (AllowAny, )
+    # permission_classes
+    # lookup_field = 'slug'
+    # filter_backends = (filters.SearchFilter,)
+    # search_fields = ('name',)
+
+    def tag_list(data):
+        serializer = TagListSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        tags = serializer.validated_data['tags']
+        return tags
 
 class UserViewSet(djoser_views.UserViewSet):
     """Вьюсет для работы с пользователями."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AllowAny,)
+    # pagination_class = LimitOffsetPagination
 
 
 
@@ -47,67 +68,6 @@ class UserViewSet(djoser_views.UserViewSet):
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         
-
-    # @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
-    # @login_required
-    # def avatar(self, request, user):
-    #     if request.method == 'PUT':
-    #         if 'avatar' not in request.data:
-    #             return Response({'error': 'Не указано поле `avatar`'}, status=status.HTTP_400_BAD_REQUEST)
-
-    #         serializer = AvatarSerializer(data=request.data)
-    #         if serializer.is_valid():
-    #             user.avatar = serializer.validated_data['avatar']
-    #             user.save()
-    #             return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
-    #         else:
-    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #     elif request.method == 'GET':
-    #         return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
-    #     elif request.method == 'DELETE':
-    #         user.avatar = None
-    #         user.save()
-    #         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-
-
-
-
-    # @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
-    # @login_required
-    # def avatar(self, request, user):
-    #     user = request.user
-    #     if request.method == 'PUT':
-    #         serializer = AvatarSerializer(data=request.data)
-    #         if serializer.is_valid():
-    #             user.avatar = serializer.validated_data['avatar']
-    #             user.save()
-    #             return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
-    #         else:
-    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #     elif request.method == 'GET':
-    #         return Response({'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
-    #     elif request.method == 'DELETE':
-    #         user.avatar = None
-    #         user.save()
-    #         return Response(status=status.HTTP_204_NO_CONTENT)
-        
-    
-    # @action(['get', 'put', 'delete'], detail=False, url_path='me/avatar', permission_classes=(IsAuthenticated,))
-    # def avatar(self, request):
-    #     user = request.user
-    #     avatar_url = user.avatar.url_path
-    #     response_data = {
-    #     '/avatars': avatar_url
-    #     }
-
-    #     return Response(response_data)
-    # @action(['post', 'delete'],
-    #         detail=True,
-    #         permission_classes=(IsAuthenticated,))
     # def subscribe(self, request, id):
     #     subscribing = get_object_or_404(User, pk=id)
 
@@ -145,41 +105,6 @@ class UserViewSet(djoser_views.UserViewSet):
     #     return self.get_paginated_response(serializer.data)
 
 
-# class TokenUserAuth(ObtainAuthToken):
-#     serializer_class = AuthTokenSerializer
-#     http_method_names = ["post", ]
-
-#     def post(self, request, *args, **kwargs):
-#         use_request = request.path.split('/')[-2]
-#         if use_request == 'login':
-#             serializer = self.serializer_class(data=request.data,
-#                                                context={'request': request})
-#             serializer.is_valid(raise_exception=True)
-#             user = serializer.validated_data['user']
-#             token, created = Token.objects.get_or_create(user=user)
-
-#             return Response({
-#                 'auth_token': token.key,
-#             })
-#         elif use_request == 'logout':
-#             auth = request.headers.get('Authorization')
-#             if auth:
-#                 token = Token.objects.filter(key=auth[6:])
-#                 if token.exists():
-#                     token.delete()
-#                     return Response(status=204)
-#                 return Response(
-#                     status=404,
-#                     data=dict(
-#                         detail='Учетные данные не найдены'
-#                     )
-#                 )
-#             return Response(
-#                 status=401,
-#                 data=dict(
-#                     detail='Учетные данные не были предоставлены.'
-#                 )
-#             )
 
 # from django.shortcuts import render
 # from rest_framework import filters, status, viewsets, mixins
