@@ -1,7 +1,7 @@
 # from django.shortcuts import get_object_or_404
 # from django.contrib.auth.decorators import login_required
 from djoser import views as djoser_views
-from rest_framework import status, filters, viewsets
+from rest_framework import status, filters, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -16,7 +16,9 @@ from .serializers import UserSerializer, AvatarSerializer, TagSerializer, TagLis
 # SubscriptionSerializer, AuthTokenSerializer
 
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet):
     """ViewSet для работы с тегами."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer

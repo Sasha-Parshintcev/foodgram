@@ -16,6 +16,7 @@ api_v1.register('tags', TagViewSet, basename='tags')
 urlpatterns = [
     path('', include(api_v1.urls)),
     re_path('auth/', include('djoser.urls.authtoken')),
+    path('', include('djoser.urls')),
     # path('auth/', include('djoser.urls')),
     # path('auth/', include('djoser.urls.authtoken')),
     # re_path(r'^auth/token/(login|logout)/', TokenUserAuth.as_view()),

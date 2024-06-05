@@ -20,7 +20,7 @@ class Tag(models.Model):
     slug = models.SlugField(
         'Идентификатор',
         max_length=32,
-        regex=r'^[\w.@+-]+$',
+        # regex=r'^[\w.@+-]+$',
         unique=True
     )
 

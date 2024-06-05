@@ -1,6 +1,7 @@
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import authenticate
 from django.core.files.base import ContentFile
+from django.db import transaction
 import base64
 from rest_framework import serializers
 from rest_framework import status
@@ -13,10 +14,13 @@ from food.models import Tag
 
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Tag."""
-
+    slug = serializers.RegexField(
+        regex=r'^[\w.@+-]+$', required=True)
+    
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
+
 
 class TagListSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Tag."""
@@ -285,7 +289,27 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 #             'id', 'author', 'name', 'image', 'description',
 #             'ingredients', 'tags', 'cooking_time', 'pub_date'
 #         )
+    # @transaction.atomic
+    # def create(self, validated_data):
+    #     request = self.context.get('request')
+    #     ingredients = validated_data.pop('recipeingredients')
+    #     tags = validated_data.pop('tags')
+    #     recipe = Recipe.objects.create(author=request.user, **validated_data)
+    #     recipe.tags.set(tags)
+    #     create_ingredients(ingredients, recipe)
+    #     return recipe
 
+    # @transaction.atomic
+    # def update(self, instance, validated_data):
+    #     ingredients = validated_data.pop('recipeingredients')
+    #     tags = validated_data.pop('tags')
+    #     instance.tags.clear()
+    #     instance.tags.set(tags)
+    #     RecipeIngredient.objects.filter(recipe=instance).delete()
+    #     super().update(instance, validated_data)
+    #     create_ingredients(ingredients, instance)
+    #     instance.save()
+    #     return instance
 
 # class RecipeIngredientSerializer(serializers.ModelSerializer):
 #     """Сериализатор для запросов к RecipeIngredient."""
