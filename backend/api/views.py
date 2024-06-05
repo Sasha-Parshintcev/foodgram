@@ -20,18 +20,18 @@ class TagViewSet(viewsets.ModelViewSet):
     """ViewSet для работы с тегами."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    # pagination_class = None
-    permission_classes = (AllowAny, )
+    pagination_class = None
+    permission_classes = (AllowAny,)
     # permission_classes
     # lookup_field = 'slug'
     # filter_backends = (filters.SearchFilter,)
     # search_fields = ('name',)
 
-    def tag_list(data):
-        serializer = TagListSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        tags = serializer.validated_data['tags']
-        return tags
+    # def tag_list(data):
+    #     serializer = TagListSerializer(data=data)
+    #     serializer.is_valid(raise_exception=True)
+    #     tags = serializer.validated_data['tags']
+    #     return tags
 
 class UserViewSet(djoser_views.UserViewSet):
     """Вьюсет для работы с пользователями."""
