@@ -9,9 +9,16 @@ from rest_framework.exceptions import ValidationError
 import api.serializers
 
 from users.models import User, Subscription
-from food.models import Tag
+from food.models import Tag, Ingredient
 
 
+class IngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для запросов к Ingredient."""
+
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
+    
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Tag."""
     slug = serializers.RegexField(
@@ -22,13 +29,13 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'slug')
 
 
-class TagListSerializer(serializers.ModelSerializer):
-    """Сериализатор для запросов к Tag."""
-    tags = TagSerializer(many=True)
+# class TagListSerializer(serializers.ModelSerializer):
+#     """Сериализатор для запросов к Tag."""
+#     tags = TagSerializer(many=True)
 
-    class Meta:
-        model = Tag
-        fields = ('tags',)
+#     class Meta:
+#         model = Tag
+#         fields = ('tags',)
     
 
 class Base64ImageField(serializers.ImageField):
@@ -66,13 +73,13 @@ class UserSerializer(serializers.ModelSerializer):
 class AvatarSerializer(serializers.Serializer):
     avatar = Base64ImageField(required=True, allow_null=True)
 
-    # def get_avatar(self, obj):
+    class Meta:
+        fields = ('avatar',)
+
+        # def get_avatar(self, obj):
     #     if obj.avatar:
     #         return {'avatar': user.avatar.url}'
     #     return None
-
-    class Meta:
-        fields = ('avatar',)
 
     # def validate_avatar(self, value):
     #     if value.size > 1024 * 1024:
@@ -269,12 +276,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 #         fields = ('id', 'name', 'slug')
 
 
-# class IngredientSerializer(serializers.ModelSerializer):
-#     """Сериализатор для запросов к Ingredient."""
-
-#     class Meta:
-#         model = Ingredient
-#         fields = ('id', 'name', 'measurement_unit')
+# 
 
 
 # class RecipeSerializer(serializers.ModelSerializer):

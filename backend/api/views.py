@@ -11,10 +11,23 @@ from rest_framework.pagination import LimitOffsetPagination
 
 from users.models import User
 # , Subscription
-from food.models import Tag
-from .serializers import UserSerializer, AvatarSerializer, TagSerializer, TagListSerializer
+from food.models import Tag, Ingredient
+from .serializers import UserSerializer, AvatarSerializer, TagSerializer, IngredientSerializer
 # SubscriptionSerializer, AuthTokenSerializer
 
+
+class IngredientViewSet(mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet):
+    """ViewSet для работы с ингредиентами."""
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    pagination_class = None
+    permission_classes = (AllowAny,)
+    # permission_classes
+    # lookup_field = 'slug'
+    # filter_backends = (filters.SearchFilter,)
+    # search_fields = ('name',)
 
 class TagViewSet(mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
