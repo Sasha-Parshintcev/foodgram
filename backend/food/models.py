@@ -65,6 +65,7 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        null=True,
         related_name='recipes',
         verbose_name='Автор рецепта'
     )
@@ -121,6 +122,34 @@ class Recipe(models.Model):
     def __str__(self):
         return f'{self.name}\n{self.text[:TEXT_LENGTH_LIMIT]}'
 
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorites',
+        verbose_name='Пользователь',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorites',
+        verbose_name='Рецепт',
+    )
+
+    class Meta:
+        ordering = ['-id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_user_recipe_favorite'
+            )
+        ]
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
+    def __str__(self):
+        return f'{self.user.username} добавил {self.recipe.name} в избраннное'
 
 class RecipeIngredient(models.Model):
     """Модель ингредиентов для рецепта."""
