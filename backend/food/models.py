@@ -13,12 +13,14 @@ class Tag(models.Model):
     """Модель ингредиента."""
     name = models.CharField(
         'Название',
-        max_length=20,
+        max_length=32,
         unique=True
         
     )
     slug = models.SlugField(
         'Идентификатор',
+        max_length=32,
+        regex=r'^[\w.@+-]+$',
         unique=True
     )
 
