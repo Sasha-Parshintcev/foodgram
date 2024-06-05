@@ -9,7 +9,7 @@ from rest_framework.exceptions import ValidationError
 import api.serializers
 
 from users.models import User, Subscription
-from food.models import Tag, Ingredient
+from food.models import Tag, Ingredient, Recipe
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -28,6 +28,19 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ('id', 'name', 'slug')
 
+
+class RecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для запросов к Recipe."""
+    
+    ingredients = IngredientSerializer(many=True, read_only=True,) #many=True
+    tags = TagSerializer(many=True, read_only=True,) #many=True
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id', 'author', 'name', 'image', 'description',
+            'ingredients', 'tags', 'cooking_time', 'pub_date'
+        )
 
 # class TagListSerializer(serializers.ModelSerializer):
 #     """Сериализатор для запросов к Tag."""
