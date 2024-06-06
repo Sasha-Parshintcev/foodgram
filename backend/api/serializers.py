@@ -13,6 +13,27 @@ from users.models import User, Subscription
 from food.models import Tag, Ingredient, Recipe
 
 
+class FavoriteSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы с избранными рецептами."""
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт уже добавлен в избранное'
+            )
+        ]
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        return RecipeSerializer(
+            instance.recipe,
+            context={'request': request}
+        ).data
+
+
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Ingredient."""
 

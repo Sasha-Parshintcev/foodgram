@@ -183,5 +183,3 @@ class RecipeIngredient(models.Model):
     def __str__(self):
         return f'{self.recipe} - {self.ingredient}'
 
-
-# class Favorites(models.Model):
