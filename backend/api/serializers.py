@@ -7,10 +7,11 @@ import base64
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.validators import UniqueTogetherValidator
 import api.serializers
 
 from users.models import User, Subscription
-from food.models import Tag, Ingredient, Recipe
+from food.models import Tag, Ingredient, Recipe, Favorite, ShoppingCart
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -91,6 +92,26 @@ class UserSerializer(UserSerializer):
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
     
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы со списком покупок."""
+    class Meta:
+        model = ShoppingCart
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingCart.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт уже добавлен в список покупок'
+            )
+        ]
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        return RecipeSerializer(
+            instance.recipe,
+            context={'request': request}
+        ).data
 
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Recipe."""
