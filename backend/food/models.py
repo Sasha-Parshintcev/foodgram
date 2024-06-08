@@ -37,12 +37,12 @@ class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Название ингредиента',
         help_text='Названия ингридинтов для блюда',
-        max_length=256,
+        max_length=128,
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
         help_text='Применяйте наиболее подходящую единицу измерения',
-        max_length=15,
+        max_length=64 ,
     )
 
     class Meta:
@@ -87,7 +87,7 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        # through='ingredient_in_recipe',
+        through='RecipeIngredient',
         verbose_name='Ингредиенты',
         help_text='Продукты для приготовления блюда по рецепту',
         related_name='recipes'
