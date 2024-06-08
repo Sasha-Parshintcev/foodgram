@@ -96,7 +96,7 @@ class Recipe(models.Model):
         Tag,
         help_text='Можно установить несколько тегов на один рецепт',
         verbose_name='Теги',
-        related_name='recipes'
+        related_name='tags'
     )
     cooking_time = models.PositiveSmallIntegerField(
         null=False,
