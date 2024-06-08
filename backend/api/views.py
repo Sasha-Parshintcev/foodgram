@@ -20,8 +20,9 @@ from food.models import (
 )
 from .serializers import (
     UserSerializer, AvatarSerializer, TagSerializer,
-    IngredientSerializer, RecipeSerializer, RecipeCreateSerializer,
+    IngredientSerializer, RecipeSerializer,
     FavoriteSerializer, ShoppingCartSerializer
+    # , RecipeCreateSerializer,
 )
 # SubscriptionSerializer, AuthTokenSerializer
 
@@ -30,80 +31,81 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с рецептами."""
     queryset = Recipe.objects.all()
     permission_classes = (AllowAny, )
+    serializer_class = RecipeSerializer
     # filter_backends = (DjangoFilterBackend,)
     # filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
-            return RecipeSerializer
-        return RecipeCreateSerializer
+    # def get_serializer_class(self):
+    #     if self.action in ('list', 'retrieve'):
+    #         return RecipeSerializer
+    #     return RecipeCreateSerializer
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated, ]
-    )
-    def favorite(self, request, pk):
-        """Работа с избранными рецептами.
-        Удаление/добавление в избранное.
-        """
-        recipe = get_object_or_404(Recipe, id=pk)
-        if request.method == 'POST':
-            return create_model_instance(request, recipe, FavoriteSerializer)
+    # @action(
+    #     detail=True,
+    #     methods=['post', 'delete'],
+    #     permission_classes=[IsAuthenticated, ]
+    # )
+    # def favorite(self, request, pk):
+    #     """Работа с избранными рецептами.
+    #     Удаление/добавление в избранное.
+    #     """
+    #     recipe = get_object_or_404(Recipe, id=pk)
+    #     if request.method == 'POST':
+    #         return create_model_instance(request, recipe, FavoriteSerializer)
 
-        if request.method == 'DELETE':
-            error_message = 'У вас нет этого рецепта в избранном'
-            return delete_model_instance(request, Favorite,
-                                         recipe, error_message)
+    #     if request.method == 'DELETE':
+    #         error_message = 'У вас нет этого рецепта в избранном'
+    #         return delete_model_instance(request, Favorite,
+    #                                      recipe, error_message)
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated, ]
-    )
-    def shopping_cart(self, request, pk):
-        """Работа со списком покупок.
-        Удаление/добавление в список покупок.
-        """
-        recipe = get_object_or_404(Recipe, id=pk)
-        if request.method == 'POST':
-            return create_model_instance(request, recipe,
-                                         ShoppingCartSerializer)
+    # @action(
+    #     detail=True,
+    #     methods=['post', 'delete'],
+    #     permission_classes=[IsAuthenticated, ]
+    # )
+    # def shopping_cart(self, request, pk):
+    #     """Работа со списком покупок.
+    #     Удаление/добавление в список покупок.
+    #     """
+    #     recipe = get_object_or_404(Recipe, id=pk)
+    #     if request.method == 'POST':
+    #         return create_model_instance(request, recipe,
+    #                                      ShoppingCartSerializer)
 
-        if request.method == 'DELETE':
-            error_message = 'У вас нет этого рецепта в списке покупок'
-            return delete_model_instance(request, ShoppingCart,
-                                         recipe, error_message)
+    #     if request.method == 'DELETE':
+    #         error_message = 'У вас нет этого рецепта в списке покупок'
+    #         return delete_model_instance(request, ShoppingCart,
+    #                                      recipe, error_message)
 
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=[IsAuthenticated, ]
-    )
-    def download_shopping_cart(self, request):
-        """Отправка файла со списком покупок."""
-        ingredients = RecipeIngredient.objects.filter(
-            recipe__carts__user=request.user
-        ).values(
-            'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(ingredient_amount=Sum('amount'))
-        shopping_list = ['Список покупок:\n']
-        for ingredient in ingredients:
-            name = ingredient['ingredient__name']
-            unit = ingredient['ingredient__measurement_unit']
-            amount = ingredient['ingredient_amount']
-            shopping_list.append(f'\n{name} - {amount}, {unit}')
-        response = HttpResponse(shopping_list, content_type='text/plain')
-        response['Content-Disposition'] = \
-            'attachment; filename="shopping_cart.txt"'
-        return response
+    # @action(
+    #     detail=False,
+    #     methods=['get'],
+    #     permission_classes=[IsAuthenticated, ]
+    # )
+    # def download_shopping_cart(self, request):
+    #     """Отправка файла со списком покупок."""
+    #     ingredients = RecipeIngredient.objects.filter(
+    #         recipe__carts__user=request.user
+    #     ).values(
+    #         'ingredient__name', 'ingredient__measurement_unit'
+    #     ).annotate(ingredient_amount=Sum('amount'))
+    #     shopping_list = ['Список покупок:\n']
+    #     for ingredient in ingredients:
+    #         name = ingredient['ingredient__name']
+    #         unit = ingredient['ingredient__measurement_unit']
+    #         amount = ingredient['ingredient_amount']
+    #         shopping_list.append(f'\n{name} - {amount}, {unit}')
+    #     response = HttpResponse(shopping_list, content_type='text/plain')
+    #     response['Content-Disposition'] = \
+    #         'attachment; filename="shopping_cart.txt"'
+    #     return response
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
-    """ViewSet для работы с рецептом."""
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+# class RecipeViewSet(viewsets.ModelViewSet):
+#     """ViewSet для работы с рецептом."""
+#     queryset = Recipe.objects.all()
+#     serializer_class = RecipeSerializer
     # permission_classes
     # lookup_field = 'slug'
     # filter_backends = (filters.SearchFilter,)
