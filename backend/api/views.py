@@ -29,8 +29,7 @@ from .serializers import (
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с рецептами."""
     queryset = Recipe.objects.all()
-    permission_classes = (AllowAny, )
-    # serializer_class = RecipeSerializer
+    permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('author', 'tags')
     http_method_names = ['get', 'post', 'patch', 'delete']
