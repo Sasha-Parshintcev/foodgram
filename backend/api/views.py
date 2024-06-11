@@ -31,7 +31,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('author', 'tags')
+    filterset_fields = ('author', 'tags', 'is_in_shopping_cart', )
     http_method_names = ['get', 'post', 'patch', 'delete']
     
     def get_queryset(self):
