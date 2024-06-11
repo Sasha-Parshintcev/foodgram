@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'food.apps.FoodConfig',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
-    # 'django_filters',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

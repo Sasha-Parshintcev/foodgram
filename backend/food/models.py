@@ -173,7 +173,7 @@ class RecipeIngredient(models.Model):
     class Meta:
         constraints = (
             models.UniqueConstraint(
-                fields=('ingredients', 'recipe'),
+                fields=('ingredient', 'recipe'),
                 name='unique_ingredient'
             ),
         )
