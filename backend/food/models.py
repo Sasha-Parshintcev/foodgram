@@ -188,13 +188,13 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='carts',
+        related_name='cart',
         verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='carts',
+        related_name='cart',
         verbose_name='Рецепт'
     )
 
@@ -212,3 +212,17 @@ class ShoppingCart(models.Model):
     def __str__(self):
         return (f'{self.user.username} добавил'
                 f'{self.recipe.name} в список покупок')
+    
+
+# class Shortener(models.Model):
+#     '''
+#     Модель короткой ссылки.
+#     ''' 
+#     create = models.DateTimeField(auto_now_add=True)
+#     short_url = models.CharField(max_length=15, unique=True, blank=True)
+
+#     class Meta:
+#         ordering = ["-create"]
+
+#     def __str__(self):
+#         return f'{self.short_url}'
