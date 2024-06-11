@@ -11,6 +11,7 @@ from rest_framework.pagination import LimitOffsetPagination
 # from rest_framework.authtoken.models import Token
 # from rest_framework.authtoken.views import ObtainAuthToken
 
+from .filters import RecipeFilter
 from users.models import User
 # , Subscription
 from .utils import create_model_instance, delete_model_instance
@@ -31,7 +32,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('author', 'tags', 'is_in_shopping_cart', )
+    filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
     
     def get_queryset(self):
