@@ -65,7 +65,6 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        # null=True,
         related_name='recipes',
         verbose_name='Автор рецепта'
     )
@@ -160,7 +159,7 @@ class RecipeIngredient(models.Model):
         verbose_name='Рецепты',
         on_delete=models.CASCADE
     )
-    ingredients = models.ForeignKey(
+    ingredient = models.ForeignKey(
         Ingredient,
         related_name='ingredient_in_recipe',
         verbose_name='Ингредиенты',

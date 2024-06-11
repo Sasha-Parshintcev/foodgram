@@ -34,6 +34,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     # filter_backends = (DjangoFilterBackend,)
     # filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
+    
+    def get_queryset(self):
+        recipes = Recipe.objects.prefetch_related(
+            'ingredient_in_recipe__ingredient', 'tags'
+        ).all()
+        return recipes
+
+    def perform_create(self, serializer):
+        return serializer.save(author=self.request.user)
 
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in SAFE_METHODS:
