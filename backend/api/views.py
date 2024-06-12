@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404, HttpResponse
 from django.db.models import Sum
+from django.contrib.auth.decorators import login_required
 # from shorten import shortener
 # from django.contrib.auth.decorators import login_required
 # from food.models import Shortener
@@ -8,9 +9,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser import views as djoser_views
 from rest_framework import status, filters, viewsets, mixins
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
+from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
+from django.core.exceptions import PermissionDenied
 # from rest_framework.authtoken.models import Token
 # from rest_framework.authtoken.views import ObtainAuthToken
 
@@ -43,9 +45,28 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'ingredient_in_recipe__ingredient', 'tags'
         ).all()
         return recipes
-
+    
     def perform_create(self, serializer):
-        return serializer.save(author=self.request.user)
+        """Сохранение автора при создании рецепта."""
+        serializer.save(author=self.request.user)
+
+    # @action(
+    #     detail=False,
+    #     methods=['post'],
+    #     permission_classes=[IsAuthenticatedOrReadOnly, ]
+    # )
+    # # @login_required
+    # def perform_create(self, serializer):
+    #     user = self.request.user
+    #     if not user.is_authenticated:
+    #         return Response(
+    #             {'detail': 'Учетные данные аутентификации не предоставлены.'},
+    #             status=status.HTTP_401_UNAUTHORIZED
+    #         )
+    #     # if self.request.user.is_authenticated:
+    #     return serializer.save(author=user)
+    #     # else:
+    #     #     raise PermissionDenied("You must be authenticated to create a recipe.")
 
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in SAFE_METHODS:

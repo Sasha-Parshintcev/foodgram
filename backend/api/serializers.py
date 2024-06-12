@@ -8,6 +8,7 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.response import Response
 import api.serializers
 
 from .utils import create_ingredients
@@ -53,12 +54,9 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к RecipeIngredient."""
-    id = serializers.IntegerField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.name', read_only=True)
-    measurement_unit = serializers.CharField(
-        source='ingredient.measurement_unit',
-        read_only=True
-    )
+    id = serializers.IntegerField() #source='ingredient_in_recipe.id'
+    name = serializers.CharField(source='ingredient.name', read_only=True) #
+    measurement_unit = serializers.CharField(source='ingredient.measurement_unit',read_only=True) #
     # id = serializers.IntegerField(read_only=True)
     # name = serializers.CharField(read_only=True)
     # measurement_unit = serializers.CharField(required=True)
@@ -76,7 +74,8 @@ class IngredientRecipeWriteSerializer(serializers.ModelSerializer):
     Сериалайзер для модели IngredientRecipes.
     Используется для коректного отображения рецепта при записи.
     '''
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required=True)
+    amount = serializers.CharField(required=True)
 
     class Meta:
         model = RecipeIngredient
@@ -165,9 +164,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     # ingredients = RecipeIngredientSerializer(many=True, read_only=False) #, required=False, source='ingredient_in_recipe'
     # tags = TagSerializer(many=True, read_only=False) #, required=False, source='recipes'
     # ingredients = RecipeIngredientSerializer(many=True, read_only=False, source='ingredient_in_recipe')
-    ingredients = RecipeIngredientSerializer(
-        many=True, source='ingredient_in_recipe'
-    )
+    ingredients = RecipeIngredientSerializer(many=True)
     tags = TagSerializer(many=True, read_only=False)
     image = Base64ImageField(required=False)
     author = UserSerializer(read_only=True) #source='author.username'
@@ -220,7 +217,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = IngredientRecipeWriteSerializer(many=True, allow_empty=False)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
-        many=True
+        many=True,
+        allow_empty=False
     )
 
     class Meta:
@@ -236,8 +234,17 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 ingredient=Ingredient.objects.get(id=ingredient['id']),
                 amount=ingredient['amount']
             )
+    
+    # def get_serializer_context(self):
+    #     context = super().get_serializer_context()
+    #     if not self.request.user.is_authenticated:
+    #         raise serializers.ValidationError("Только зарегистрированные пользователи могут создавать рецепты.", code=401)
+    #     context['author'] = self.request.user
+    #     return context
 
     def create(self, validated_data):
+        # if not self.context['request'].user.is_authenticated:
+        #     raise serializers.ValidationError("Только зарегистрированные пользователи могут создавать рецепты.", code=401)
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
@@ -266,13 +273,28 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         исключения в случае повторения тегов или ингредиентов.
         """
         ingredients_list = []
-        tags_list = []
+        # tags_list = []
+        # available_ingredients = Ingredient.objects.values_list('id', flat=True)
+        # missing_ingredients = [ingredient for ingredient in ingredients if ingredient not in available_ingredients]
+        # if missing_ingredients:
+        #     raise serializers.ValidationError(
+        #         'Вы пытаетесь добавить в рецепт несуществующий ингредиент'
+        #     )
         for ingredient in data.get('ingredients'):
             if ingredient.get('amount') <= 0:
                 raise serializers.ValidationError(
                     'Количество не может быть меньше 1'
                 )
             ingredients_list.append(ingredient.get('id'))
+            if ingredient.get('id') not in ingredients_list:
+                raise serializers.ValidationError(
+                    'Вы пытаетесь добавить в рецепт несуществующий ингредиент'
+                )
+        # missing_ingredients = [ingredient for ingredient in ingredients if ingredient not in available_ingredients]
+        # if ingredient.get('id') not in ingredients_list:
+        #     raise serializers.ValidationError(
+        #         'Вы пытаетесь добавить в рецепт несуществующий ингредиент'
+        #     )
         if len(set(ingredients_list)) != len(ingredients_list):
             raise serializers.ValidationError(
                 'Вы пытаетесь добавить в рецепт два одинаковых ингредиента'
