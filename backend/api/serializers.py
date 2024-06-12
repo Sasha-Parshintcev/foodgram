@@ -217,7 +217,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     # author = serializers.SlugRelatedField(read_only=True, slug_field='username')
     image = Base64ImageField()
-    ingredients = IngredientRecipeWriteSerializer(many=True)
+    ingredients = IngredientRecipeWriteSerializer(many=True, allow_empty=False)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True
@@ -259,6 +259,31 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         context = {'request': request}
         return RecipeSerializer(instance, context=context).data
+    
+    def validate(self, data):
+        """
+        Валидация на количество ингредиентов в рецепте и выбрасывание
+        исключения в случае повторения тегов или ингредиентов.
+        """
+        ingredients_list = []
+        tags_list = []
+        for ingredient in data.get('ingredients'):
+            if ingredient.get('amount') <= 0:
+                raise serializers.ValidationError(
+                    'Количество не может быть меньше 1'
+                )
+            ingredients_list.append(ingredient.get('id'))
+        if len(set(ingredients_list)) != len(ingredients_list):
+            raise serializers.ValidationError(
+                'Вы пытаетесь добавить в рецепт два одинаковых ингредиента'
+            )
+        tags = data.get('tags', [])
+        if len(set(tags)) != len(tags):
+            raise serializers.ValidationError(
+                'Рецепт не может содержать повторяющиеся теги'
+        )
+        return data
+        
     # def create(self, validated_data):
     #     tags_data = validated_data.pop('tags')
     #     ingredients_data = validated_data.pop('ingredients')

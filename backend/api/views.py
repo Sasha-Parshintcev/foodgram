@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, HttpResponse
 from django.db.models import Sum
 # from shorten import shortener
 # from django.contrib.auth.decorators import login_required
-from food.models import Shortener
+# from food.models import Shortener
 # from .utils import shortener
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser import views as djoser_views
@@ -36,7 +36,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    # http_method_names = ['get', 'post', 'patch', 'delete']
     
     def get_queryset(self):
         recipes = Recipe.objects.prefetch_related(
@@ -52,16 +52,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return RecipeCreateSerializer
     
-    @action(
-        methods=['get'],
-        detail=True,
-        url_path='get-link',
-        url_name='get-link',
-    )
-    def get_link(self, request, pk=None):
-        original_url = 'http://sashamyhost.zapto.org/'
-        short_link = Shortener.create(request.user, original_url)
-        return Response({'short-link': short_link })
+    # @action(
+    #     methods=['get'],
+    #     detail=True,
+    #     url_path='get-link',
+    #     url_name='get-link',
+    # )
+    # def get_link(self, request, pk=None):
+    #     original_url = 'http://sashamyhost.zapto.org/'
+    #     short_link = shortener.create(request.user, original_url)
+    #     return Response({'short-link': short_link })
 
     @action(
         detail=True,
