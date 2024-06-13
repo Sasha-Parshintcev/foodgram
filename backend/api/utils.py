@@ -1,12 +1,11 @@
 from django.shortcuts import get_object_or_404
-from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 
 from food.models import Ingredient, RecipeIngredient
 
 
-def create_ingredients(ingredients, recipe):
+def create_ingredients(recipe, ingredients):
     """Вспомогательная функция для добавления ингредиентов.
     Используется при создании/редактировании рецепта."""
     ingredient_list = []
