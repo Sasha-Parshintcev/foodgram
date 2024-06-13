@@ -177,6 +177,7 @@ class RecipeIngredient(models.Model):
                 name='unique_ingredient'
             ),
         )
+        default_related_name = 'ingredient_in_recipe'
         verbose_name = 'Ингредиенты рецепта'
         verbose_name_plural = 'Ингредиенты рецептов'
 
