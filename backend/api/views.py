@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 # from .utils import shortener
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser import views as djoser_views
-from rest_framework import status, filters, viewsets, mixins
+from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -38,7 +38,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    # http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ['get', 'post', 'patch', 'delete']
     
     def get_queryset(self):
         recipes = Recipe.objects.prefetch_related(
@@ -84,65 +84,65 @@ class RecipeViewSet(viewsets.ModelViewSet):
     #     short_link = shortener.create(request.user, original_url)
     #     return Response({'short-link': short_link })
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated, ]
-    )
-    def favorite(self, request, pk):
-        """Работа с избранными рецептами.
-        Удаление/добавление в избранное.
-        """
-        recipe = get_object_or_404(Recipe, id=pk)
-        if request.method == 'POST':
-            return create_model_instance(request, recipe, FavoriteSerializer)
+    # @action(
+    #     detail=True,
+    #     methods=['post', 'delete'],
+    #     permission_classes=[IsAuthenticated, ]
+    # )
+    # def favorite(self, request, pk):
+    #     """Работа с избранными рецептами.
+    #     Удаление/добавление в избранное.
+    #     """
+    #     recipe = get_object_or_404(Recipe, id=pk)
+    #     if request.method == 'POST':
+    #         return create_model_instance(request, recipe, FavoriteSerializer)
 
-        if request.method == 'DELETE':
-            error_message = 'У вас нет этого рецепта в избранном'
-            return delete_model_instance(request, Favorite,
-                                         recipe, error_message)
+    #     if request.method == 'DELETE':
+    #         error_message = 'У вас нет этого рецепта в избранном'
+    #         return delete_model_instance(request, Favorite,
+    #                                      recipe, error_message)
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated, ]
-    )
-    def shopping_cart(self, request, pk):
-        """Работа со списком покупок.
-        Удаление/добавление в список покупок.
-        """
-        recipe = get_object_or_404(Recipe, id=pk)
-        if request.method == 'POST':
-            return create_model_instance(request, recipe,
-                                         ShoppingCartSerializer)
+    # @action(
+    #     detail=True,
+    #     methods=['post', 'delete'],
+    #     permission_classes=[IsAuthenticated, ]
+    # )
+    # def shopping_cart(self, request, pk):
+    #     """Работа со списком покупок.
+    #     Удаление/добавление в список покупок.
+    #     """
+    #     recipe = get_object_or_404(Recipe, id=pk)
+    #     if request.method == 'POST':
+    #         return create_model_instance(request, recipe,
+    #                                      ShoppingCartSerializer)
 
-        if request.method == 'DELETE':
-            error_message = 'У вас нет этого рецепта в списке покупок'
-            return delete_model_instance(request, ShoppingCart,
-                                         recipe, error_message)
+    #     if request.method == 'DELETE':
+    #         error_message = 'У вас нет этого рецепта в списке покупок'
+    #         return delete_model_instance(request, ShoppingCart,
+    #                                      recipe, error_message)
 
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=[IsAuthenticated, ]
-    )
-    def download_shopping_cart(self, request):
-        """Отправка файла со списком покупок."""
-        ingredients = RecipeIngredient.objects.filter(
-            recipe__carts__user=request.user
-        ).values(
-            'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(ingredient_amount=Sum('amount'))
-        shopping_list = ['Список покупок:\n']
-        for ingredient in ingredients:
-            name = ingredient['ingredient__name']
-            unit = ingredient['ingredient__measurement_unit']
-            amount = ingredient['ingredient_amount']
-            shopping_list.append(f'\n{name} - {amount}, {unit}')
-        response = HttpResponse(shopping_list, content_type='text/plain')
-        response['Content-Disposition'] = \
-            'attachment; filename="shopping_cart.txt"'
-        return response
+    # @action(
+    #     detail=False,
+    #     methods=['get'],
+    #     permission_classes=[IsAuthenticated, ]
+    # )
+    # def download_shopping_cart(self, request):
+    #     """Отправка файла со списком покупок."""
+    #     ingredients = RecipeIngredient.objects.filter(
+    #         recipe__carts__user=request.user
+    #     ).values(
+    #         'ingredient__name', 'ingredient__measurement_unit'
+    #     ).annotate(ingredient_amount=Sum('amount'))
+    #     shopping_list = ['Список покупок:\n']
+    #     for ingredient in ingredients:
+    #         name = ingredient['ingredient__name']
+    #         unit = ingredient['ingredient__measurement_unit']
+    #         amount = ingredient['ingredient_amount']
+    #         shopping_list.append(f'\n{name} - {amount}, {unit}')
+    #     response = HttpResponse(shopping_list, content_type='text/plain')
+    #     response['Content-Disposition'] = \
+    #         'attachment; filename="shopping_cart.txt"'
+    #     return response
 
 
 # class RecipeViewSet(viewsets.ModelViewSet):
