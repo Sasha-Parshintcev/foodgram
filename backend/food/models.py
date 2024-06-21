@@ -46,13 +46,13 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ['name']
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'measurement_unit'],
-                name='Уникальная запись ингредиент - единица измерения',
+                name='unique_ingredient',
             )
         ]
 
@@ -95,10 +95,10 @@ class Recipe(models.Model):
         Tag,
         help_text='Можно установить несколько тегов на один рецепт',
         verbose_name='Теги',
-        related_name='tags'
+        related_name='recipes'
     )
     cooking_time = models.PositiveSmallIntegerField(
-        null=False,
+        # null=False,
         verbose_name='Время приготовления',
         help_text='Введите время приготовления',
         validators=(
@@ -161,7 +161,7 @@ class RecipeIngredient(models.Model):
     )
     ingredient = models.ForeignKey(
         Ingredient,
-        related_name='ingredient_in_recipe',
+        related_name='recipe_in_ingredient',
         verbose_name='Ингредиенты',
         on_delete=models.CASCADE
     )
@@ -171,13 +171,13 @@ class RecipeIngredient(models.Model):
     )
 
     class Meta:
-        constraints = (
-            models.UniqueConstraint(
-                fields=('ingredient', 'recipe'),
-                name='unique_ingredient'
-            ),
-        )
-        default_related_name = 'ingredient_in_recipe'
+        # constraints = (
+        #     models.UniqueConstraint(
+        #         fields=('ingredient', 'recipe'),
+        #         name='unique_ingredient'
+        #     ),
+        # )
+        # default_related_name = 'ingredient_in_recipe'
         verbose_name = 'Ингредиенты рецепта'
         verbose_name_plural = 'Ингредиенты рецептов'
 
