@@ -29,14 +29,14 @@ from .serializers import (
     IngredientSerializer, RecipeSerializer,
     FavoriteSerializer, ShoppingCartSerializer, RecipeCreateSerializer,
 )
-# from .permissions import IsOwnerOrReadOnly
+from .permissions import IsAuthorOrReadOnly
 # SubscriptionSerializer, AuthTokenSerializer
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с рецептами."""
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -49,6 +49,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         """Сохранение автора при создании рецепта."""
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
         serializer.save(author=self.request.user)
 
     # @action(
