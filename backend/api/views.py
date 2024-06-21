@@ -17,8 +17,8 @@ from django.core.exceptions import PermissionDenied
 # from rest_framework.authtoken.views import ObtainAuthToken
 
 from .filters import RecipeFilter
-from users.models import User, Subscription
-# 
+from users.models import User
+# , Subscription
 from .utils import create_model_instance, delete_model_instance
 from food.models import (
     Tag, Ingredient, Recipe, Favorite,
@@ -27,7 +27,7 @@ from food.models import (
 from .serializers import (
     UserSerializer, AvatarSerializer, TagSerializer,
     IngredientSerializer, RecipeSerializer,
-    FavoriteSerializer, ShoppingCartSerializer, RecipeCreateSerializer, SubscriptionSerializer
+    FavoriteSerializer, ShoppingCartSerializer, RecipeCreateSerializer,
 )
 # from .permissions import IsOwnerOrReadOnly
 # SubscriptionSerializer, AuthTokenSerializer
@@ -223,41 +223,41 @@ class UserViewSet(djoser_views.UserViewSet):
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         
-    def subscribe(self, request, id):
-        subscribing = get_object_or_404(User, pk=id)
+    # def subscribe(self, request, id):
+    #     subscribing = get_object_or_404(User, pk=id)
 
-        if request.method == 'POST':
-            serializer = SubscriptionSerializer(
-                data={'user': request.user.pk,
-                      'subscribing': subscribing.pk},
-                context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+    #     if request.method == 'POST':
+    #         serializer = SubscriptionSerializer(
+    #             data={'user': request.user.pk,
+    #                   'subscribing': subscribing.pk},
+    #             context={'request': request})
+    #         serializer.is_valid(raise_exception=True)
+    #         serializer.save()
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        subscription = Subscription.objects.filter(user=request.user,
-                                                   subscribing=subscribing)
-        if subscription.exists():
-            subscription.delete()
+    #     subscription = Subscription.objects.filter(user=request.user,
+    #                                                subscribing=subscribing)
+    #     if subscription.exists():
+    #         subscription.delete()
 
-            return Response(status=status.HTTP_204_NO_CONTENT)
+    #         return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response({'errors': 'Вы не были подписаны ранее!'},
-                        status=status.HTTP_400_BAD_REQUEST)
+    #     return Response({'errors': 'Вы не были подписаны ранее!'},
+    #                     status=status.HTTP_400_BAD_REQUEST)
 
-    @action(['get'],
-            detail=False,
-            permission_classes=(IsAuthenticated,))
-    def subscriptions(self, request):
-        queryset = User.objects.filter(
-            subscribing__user=request.user).prefetch_related('recipes')
-        pages = self.paginate_queryset(queryset)
-        serializer = SubscriptionSerializer(pages,
-                                            many=True,
-                                            context={'request': request})
+    # @action(['get'],
+    #         detail=False,
+    #         permission_classes=(IsAuthenticated,))
+    # def subscriptions(self, request):
+    #     queryset = User.objects.filter(
+    #         subscribing__user=request.user).prefetch_related('recipes')
+    #     pages = self.paginate_queryset(queryset)
+    #     serializer = SubscriptionSerializer(pages,
+    #                                         many=True,
+    #                                         context={'request': request})
 
-        return self.get_paginated_response(serializer.data)
+    #     return self.get_paginated_response(serializer.data)
 
 
 
@@ -304,25 +304,25 @@ class UserViewSet(djoser_views.UserViewSet):
 #     # search_fields = ('name',)
 
 
-class SubscriptionViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet
-):
-    """Вьюсет фолловера."""
-    queryset = Subscription.objects.all()
-    serializer_class = SubscriptionSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
-    # filter_backends = (filters.SearchFilter,)
-    search_fields = ('user__username', 'author__username',)
+# class SubscriptionViewSet(
+#     mixins.ListModelMixin,
+#     mixins.CreateModelMixin,
+#     viewsets.GenericViewSet
+# ):
+#     """Вьюсет фолловера."""
+#     queryset = Subscription.objects.all()
+#     serializer_class = SubscriptionSerializer
+#     # permission_classes = (permissions.IsAuthenticated,)
+#     # filter_backends = (filters.SearchFilter,)
+#     search_fields = ('user__username', 'author__username',)
 
-    def get_queryset(self):
-        """Получение подписок."""
-        return get_object_or_404(User, username=self.request.user).follower
+#     def get_queryset(self):
+#         """Получение подписок."""
+#         return get_object_or_404(User, username=self.request.user).follower
 
-    def perform_create(self, serializer):
-        """Сохраняет объект, указывая пользователя."""
-        serializer.save(user=self.request.user)
+#     def perform_create(self, serializer):
+#         """Сохраняет объект, указывая пользователя."""
+#         serializer.save(user=self.request.user)
 
 
 # class UserViewSet(viewsets.ModelViewSet):
