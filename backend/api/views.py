@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404, HttpResponse
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
-# from shorten import shortener
+# from shortener import create_short_link
+from shortener import shortener
 # from django.contrib.auth.decorators import login_required
 # from food.models import Shortener
 # from .utils import shortener
@@ -23,11 +24,13 @@ from .utils import create_model_instance, delete_model_instance
 from food.models import (
     Tag, Ingredient, Recipe, Favorite,
     ShoppingCart, RecipeIngredient
+    # , RecipeLink
 )
 from .serializers import (
     UserSerializer, AvatarSerializer, TagSerializer,
     IngredientSerializer, RecipeSerializer,
-    FavoriteSerializer, ShoppingCartSerializer, RecipeCreateSerializer,
+    FavoriteSerializer, ShoppingCartSerializer, RecipeCreateSerializer
+    # , RecipeLinkSerializer
 )
 from .permissions import IsAuthorOrReadOnly
 # SubscriptionSerializer, AuthTokenSerializer
@@ -54,39 +57,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(author=self.request.user)
 
-    # @action(
-    #     detail=False,
-    #     methods=['post'],
-    #     permission_classes=[IsAuthenticatedOrReadOnly, ]
-    # )
-    # # @login_required
-    # def perform_create(self, serializer):
-    #     user = self.request.user
-    #     if not user.is_authenticated:
-    #         return Response(
-    #             {'detail': 'Учетные данные аутентификации не предоставлены.'},
-    #             status=status.HTTP_401_UNAUTHORIZED
-    #         )
-    #     # if self.request.user.is_authenticated:
-    #     return serializer.save(author=user)
-    #     # else:
-    #     #     raise PermissionDenied("You must be authenticated to create a recipe.")
-
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in SAFE_METHODS:
             return RecipeSerializer
         return RecipeCreateSerializer
     
-    # @action(
-    #     methods=['get'],
-    #     detail=True,
-    #     url_path='get-link',
-    #     url_name='get-link',
-    # )
-    # def get_link(self, request, pk=None):
-    #     original_url = 'http://sashamyhost.zapto.org/'
-    #     short_link = shortener.create(request.user, original_url)
-    #     return Response({'short-link': short_link })
+    @action(
+        methods=['get'],
+        detail=True,
+        url_path='get-link',
+        url_name='get-link',
+        # permission_classes=IsAuthenticatedOrReadOnly,
+    )
+    def get_link(self, request, pk=None):
+        # recipe = Recipe.objects.get(id=pk)
+        original_url = 'http://sashamyhost.zapto.org/api/recipes/'  #recipe.url   
+        short_link = shortener.create(request.user, original_url)
+        return Response({'short-link': short_link })
 
     # @action(
     #     detail=True,
@@ -157,6 +144,39 @@ class RecipeViewSet(viewsets.ModelViewSet):
     # lookup_field = 'slug'
     # filter_backends = (filters.SearchFilter,)
     # search_fields = ('name',)
+
+# class (viewsets.ViewSet):
+#     queryset = RecipeLink.objects.all()
+#     serializer_class = RecipeLinkSerializer
+
+#     def create(self, request):
+#         serializer = self.serializer_class(data=request.data)
+#         if serializer.is_valid():
+#             original_url = serializer.validated_data.get('original_url')
+#             short_url = shortener.get_short_url(original_url)  # Генерация короткой ссылки
+#             serializer.save(short_url=short_url)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#     def list(self, request):
+#         queryset = RecipeLink.objects.all()
+#         serializer = RecipeLinkSerializer(queryset, many=True)
+#         return ResponseRecipeLinkViewSet(serializer.data)
+
+#     def retrieve(self, request, pk=None):
+#         queryset = RecipeLink.objects.all()
+#         recipe = get_object_or_404(queryset, pk=pk)
+#         serializer = RecipeLinkSerializer(recipe)
+#         return Response(serializer.data)
+
+#     def update(self, request, pk=None):
+#         recipe = RecipeLink.objects.get(pk=pk)
+#         serializer = RecipeLinkSerializer(recipe, data=request.data, partial=True)
+#         if serializer.is_valid():
+#             short_url = shortener.get_short_url(serializer.validated_data.get('original_url'))  # Генерация короткой ссылки
+#             serializer.save(short_url=short_url)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class IngredientViewSet(mixins.ListModelMixin,

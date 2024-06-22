@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
+import base64
 
 User = get_user_model()
 
 
+MAX_LENGTH_SHORT_LINK=200
 TEXT_LENGTH_LIMIT=20
 MIN_COOK_TIME=1
 
@@ -112,7 +114,14 @@ class Recipe(models.Model):
         'Дата публикации',
         auto_now_add=True,
         db_index=True,
-    )        
+    )
+    short_link = models.CharField(
+        'Короткая ссылка на рецепт',
+        max_length = MAX_LENGTH_SHORT_LINK,
+        unique = True,
+        blank = True,
+        null = True
+    )
 
     class Meta:
         ordering = ['-pub_date']
@@ -121,6 +130,28 @@ class Recipe(models.Model):
 
     def __str__(self):
         return f'{self.name}\n{self.text[:TEXT_LENGTH_LIMIT]}'
+    
+    @staticmethod
+    def _get_short_link(recipe_id):
+        recipe_id_bytes = str(recipe_id).encode('utf-8')
+        return base64.urlsafe_b64encode(recipe_id_bytes).decode('utf-8')
+    
+    def save(self, *args, **kwargs):
+        """Сохраняет объект и генерирует короткую ссылку при создании."""
+        super().save(*args, **kwargs)
+        if not self.short_link:
+            self.short_link = self._get_short_link(self.id)
+            super().save(update_fields=['short_link'])
+        
+# class RecipeLink(models.Model):
+#     original_url = models.URLField()
+#     short_url = models.URLField(
+#         unique=True,
+#         blank=True
+#     )
+
+#     def __str__(self):
+#         return self.original_url
 
 
 class Favorite(models.Model):
