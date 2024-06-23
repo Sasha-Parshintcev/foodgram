@@ -446,30 +446,87 @@ class AvatarSerializer(serializers.Serializer):
 #         fields = ('email', 'id', 'username', 'first_name',
 #                   'last_name', 'is_subscribed', 'avatar',)
     
-
 class SubscriptionSerializer(serializers.ModelSerializer):
-    """Сериализатор подписки."""
-    email = serializers.ReadOnlyField(source='author.email')
-    id = serializers.ReadOnlyField(source='author.id')
-    username = serializers.ReadOnlyField(source='author.username')
-    first_name = serializers.ReadOnlyField(source='author.first_name')
-    last_name = serializers.ReadOnlyField(source='author.last_name')
-    is_subscribed = serializers.SerializerMethodField()
-    recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    """Просмотр списка подписок пользователя."""
+
+    recipes_count = serializers.IntegerField(
+        source='recipes.count',
+        read_only=True
+    )
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+    recipes = RecipeShortSerializer(read_only=True)
 
     class Meta:
-        model = Subscription
+        model = User
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes', 'recipes_count')
+                  'last_name', 'is_subscribed', 'recipes', 'recipes_count', 'avatar')
 
     def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        user = self.context['request'].user
+        if not request or not user.is_authenticated:
+            return False
+        return obj.following.filter(user=user).exists()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit_recipes = request.query_params.get('recipes_limit')
+        if limit_recipes is not None:
+            recipes = obj.recipes.all()[:(int(limit_recipes))]
+        else:
+            recipes = obj.recipes.all()
+        context = {'request': request}
+        return RecipeShortSerializer(recipes, many=True,
+                                     context=context).data
+    
+class SubscribeSerializer(serializers.Serializer):
+    """Добавление и удаление подписок пользователя."""
+
+    def validate(self, data):
         user = self.context.get('request').user
-        if not user.is_anonymous:
-            return Subscription.objects.filter(
-                user=obj.user,
-                author=obj.author).exists()
-        return False
+        author = get_object_or_404(User, pk=self.context['id'])
+        if user == author:
+            raise serializers.ValidationError(
+                'Вы не можете подписаться на себя'
+            )
+        if Subscription.objects.filter(user=user, author=author).exists():
+            raise serializers.ValidationError(
+                'Вы уже подписаны на этого пользователя'
+            )
+        return data
+
+    def create(self, validated_data):
+        user = self.context.get('request').user
+        author = get_object_or_404(User, pk=validated_data['id'])
+        Subscription.objects.create(user=user, author=author)
+        serializer = SubscriptionSerializer(
+            author, context={'request': self.context.get('request')}
+        )
+        return serializer.data
+    
+# class SubscriptionSerializer(serializers.ModelSerializer):
+#     """Сериализатор подписки."""
+#     email = serializers.ReadOnlyField(source='author.email')
+#     id = serializers.ReadOnlyField(source='author.id')
+#     username = serializers.ReadOnlyField(source='author.username')
+#     first_name = serializers.ReadOnlyField(source='author.first_name')
+#     last_name = serializers.ReadOnlyField(source='author.last_name')
+#     is_subscribed = serializers.SerializerMethodField()
+#     recipes = serializers.SerializerMethodField()
+#     recipes_count = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Subscription
+#         fields = ('email', 'id', 'username', 'first_name',
+#                   'last_name', 'is_subscribed', 'recipes', 'recipes_count')
+
+#     def get_is_subscribed(self, obj):
+#         user = self.context.get('request').user
+#         if not user.is_anonymous:
+#             return Subscription.objects.filter(
+#                 user=obj.user,
+#                 author=obj.author).exists()
+#         return False
 
     # def get_recipes(self, obj):
     #     request = self.context.get('request')

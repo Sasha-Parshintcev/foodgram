@@ -35,31 +35,31 @@ from food.models import (
 from .serializers import (
     UserSerializer, AvatarSerializer, TagSerializer,
     IngredientSerializer, RecipeSerializer,
-    FavoriteSerializer, ShoppingCartSerializer, RecipeCreateSerializer, SubscriptionSerializer
+    FavoriteSerializer, ShoppingCartSerializer, RecipeCreateSerializer, SubscriptionSerializer, SubscribeSerializer
     # , RecipeLinkSerializer
 )
 from .permissions import IsAuthorOrReadOnly
 # 
 
-class SubscriptionViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet
-):
-    """Вьюсет фолловера."""
-    queryset = Subscription.objects.all()
-    serializer_class = SubscriptionSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
-    # filter_backends = (filters.SearchFilter,)
-    search_fields = ('user__username', 'author__username',)
+# class SubscriptionViewSet(
+#     mixins.ListModelMixin,
+#     mixins.CreateModelMixin,
+#     viewsets.GenericViewSet
+# ):
+#     """Вьюсет фолловера."""
+#     queryset = Subscription.objects.all()
+#     serializer_class = SubscriptionSerializer
+#     # permission_classes = (permissions.IsAuthenticated,)
+#     # filter_backends = (filters.SearchFilter,)
+#     search_fields = ('user__username', 'author__username',)
 
-    def get_queryset(self):
-        """Получение подписок."""
-        return get_object_or_404(User, username=self.request.user).follower
+#     def get_queryset(self):
+#         """Получение подписок."""
+#         return get_object_or_404(User, username=self.request.user).follower
 
-    def perform_create(self, serializer):
-        """Сохраняет объект, указывая пользователя."""
-        serializer.save(user=self.request.user)
+#     def perform_create(self, serializer):
+#         """Сохраняет объект, указывая пользователя."""
+#         serializer.save(user=self.request.user)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -320,7 +320,7 @@ class UserViewSet(djoser_views.UserViewSet):
 
     @action(detail=True,
             methods=('post', 'delete'),
-            serializer_class=SubscriptionSerializer,
+            serializer_class=SubscribeSerializer,
             permission_classes=(IsAuthenticated,),
             )
     def subscribe(self, request, id=None):
