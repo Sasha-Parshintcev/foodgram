@@ -1,8 +1,10 @@
 from django.shortcuts import get_object_or_404, HttpResponse
-from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
 # from shortener import create_short_link
-from shortener import shortener
+# from shortener import shortener
+from http import HTTPStatus
+import shortuuid
+from shortener.models import Url
 # from django.contrib.auth.decorators import login_required
 # from food.models import Shortener
 # from .utils import shortener
@@ -17,10 +19,14 @@ from django.core.exceptions import PermissionDenied
 # from rest_framework.authtoken.models import Token
 # from rest_framework.authtoken.views import ObtainAuthToken
 
+# У тебя получилось пройти тесты на короткие ссылки? Я чет
+# когда пытался выполнить миграции, то ругалось на конфликты созданных миграций
+# в самой библиотеке shortener. Я уже мержил, переименовывал их, потому что импортируем модель Url,
+# а в последних миграциях там другое значение ключа
 from .filters import RecipeFilter
-from users.models import User
-# , Subscription
-from .utils import create_model_instance, delete_model_instance
+from users.models import User, Subscription
+# 
+from .utils import create_model_instance, delete_model_instance, create_shopping_list_report
 from food.models import (
     Tag, Ingredient, Recipe, Favorite,
     ShoppingCart, RecipeIngredient
@@ -29,11 +35,31 @@ from food.models import (
 from .serializers import (
     UserSerializer, AvatarSerializer, TagSerializer,
     IngredientSerializer, RecipeSerializer,
-    FavoriteSerializer, ShoppingCartSerializer, RecipeCreateSerializer
+    FavoriteSerializer, ShoppingCartSerializer, RecipeCreateSerializer, SubscriptionSerializer
     # , RecipeLinkSerializer
 )
 from .permissions import IsAuthorOrReadOnly
-# SubscriptionSerializer, AuthTokenSerializer
+# 
+
+class SubscriptionViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
+    """Вьюсет фолловера."""
+    queryset = Subscription.objects.all()
+    serializer_class = SubscriptionSerializer
+    # permission_classes = (permissions.IsAuthenticated,)
+    # filter_backends = (filters.SearchFilter,)
+    search_fields = ('user__username', 'author__username',)
+
+    def get_queryset(self):
+        """Получение подписок."""
+        return get_object_or_404(User, username=self.request.user).follower
+
+    def perform_create(self, serializer):
+        """Сохраняет объект, указывая пользователя."""
+        serializer.save(user=self.request.user)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -60,57 +86,83 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in SAFE_METHODS:
             return RecipeSerializer
+        # elif self.action == 'is_favorited':
+        #     return FavoriteSerializer
         return RecipeCreateSerializer
     
     @action(
         methods=['get'],
         detail=True,
         url_path='get-link',
-        url_name='get-link',
-        # permission_classes=IsAuthenticatedOrReadOnly,
     )
     def get_link(self, request, pk=None):
-        # recipe = Recipe.objects.get(id=pk)
-        original_url = 'http://sashamyhost.zapto.org/api/recipes/'  #recipe.url   
-        short_link = shortener.create(request.user, original_url)
-        return Response({'short-link': short_link })
+        recipe = self.get_object()
+        long_url = request.build_absolute_uri(f'/recipes/{recipe.pk}/')
+        short_id = shortuuid.uuid()[:6]
+        short_url = Url.objects.create(long_url=long_url, short_id=short_id)   
+        short_link = request.build_absolute_uri(f'/s/{short_url.short_id}/')
+        return Response({'short-link': short_link }, status=HTTPStatus.OK)
 
-    # @action(
-    #     detail=True,
-    #     methods=['post', 'delete'],
-    #     permission_classes=[IsAuthenticated, ]
-    # )
-    # def favorite(self, request, pk):
-    #     """Работа с избранными рецептами.
-    #     Удаление/добавление в избранное.
-    #     """
-    #     recipe = get_object_or_404(Recipe, id=pk)
-    #     if request.method == 'POST':
-    #         return create_model_instance(request, recipe, FavoriteSerializer)
 
-    #     if request.method == 'DELETE':
-    #         error_message = 'У вас нет этого рецепта в избранном'
-    #         return delete_model_instance(request, Favorite,
-    #                                      recipe, error_message)
+    @action(
+        detail=True,
+        methods=['get', 'post', 'delete'],
+        permission_classes=[IsAuthenticated, ]
+    )
+    def favorite(self, request, pk):
+        """Работа с избранными рецептами.
+        Удаление/добавление в избранное.
+        """
+        recipe = get_object_or_404(Recipe, id=pk)
+        # if request.method == 'GET':
+        #     return 
+        
+        if request.method == 'POST':
+            return create_model_instance(request, recipe, FavoriteSerializer)
 
-    # @action(
-    #     detail=True,
-    #     methods=['post', 'delete'],
-    #     permission_classes=[IsAuthenticated, ]
-    # )
-    # def shopping_cart(self, request, pk):
-    #     """Работа со списком покупок.
-    #     Удаление/добавление в список покупок.
-    #     """
-    #     recipe = get_object_or_404(Recipe, id=pk)
-    #     if request.method == 'POST':
-    #         return create_model_instance(request, recipe,
-    #                                      ShoppingCartSerializer)
+        if request.method == 'DELETE':
+            error_message = 'У вас нет этого рецепта в избранном'
+            return delete_model_instance(request, Favorite,
+                                         recipe, error_message)
 
-    #     if request.method == 'DELETE':
-    #         error_message = 'У вас нет этого рецепта в списке покупок'
-    #         return delete_model_instance(request, ShoppingCart,
-    #                                      recipe, error_message)
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticatedOrReadOnly, ]
+    )
+    def shopping_cart(self, request, pk):
+        """Работа со списком покупок.
+        Удаление/добавление в список покупок.
+        """
+        recipe = get_object_or_404(Recipe, id=pk)
+        # if request.method == 'GET':
+        #     return create_model_instance(request, recipe,
+        #                                  ShoppingCartSerializer)
+        
+        if request.method == 'POST':
+            return create_model_instance(request, recipe,
+                                         ShoppingCartSerializer)
+
+        if request.method == 'DELETE':
+            error_message = 'У вас нет этого рецепта в списке покупок'
+            return delete_model_instance(request, ShoppingCart,
+                                         recipe, error_message)
+
+    @action(
+        detail=False,
+        methods=('get',),
+        permission_classes=(IsAuthenticated,),
+    )
+    def download_shopping_cart(self, request):
+        """Отправка файла со списком покупок."""
+
+        shopping_cart = ShoppingCart.objects.filter(user=self.request.user)
+        buy_list_text = create_shopping_list_report(shopping_cart)
+        response = HttpResponse(buy_list_text, content_type="text/plain")
+        response['Content-Disposition'] = (
+            'attachment; filename=shopping-list.txt'
+        )
+        return response
 
     # @action(
     #     detail=False,
@@ -127,9 +179,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     #     shopping_list = ['Список покупок:\n']
     #     for ingredient in ingredients:
     #         name = ingredient['ingredient__name']
-    #         unit = ingredient['ingredient__measurement_unit']
-    #         amount = ingredient['ingredient_amount']
-    #         shopping_list.append(f'\n{name} - {amount}, {unit}')
+    #         measurement_unit = ingredient['ingredient__measurement_unit']
+    #         amount = ingredient['ingredient__amount']
+    #         shopping_list.append(f'\n{name} - {amount}, {measurement_unit}')
     #     response = HttpResponse(shopping_list, content_type='text/plain')
     #     response['Content-Disposition'] = \
     #         'attachment; filename="shopping_cart.txt"'
@@ -245,7 +297,58 @@ class UserViewSet(djoser_views.UserViewSet):
             user.avatar = None
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        
+
+    @action(
+        methods=('get',),
+        detail=False,
+        serializer_class=SubscriptionSerializer,
+        permission_classes=(IsAuthenticated,),
+        pagination_class=LimitOffsetPagination
+    )
+    def subscriptions(self, request):
+        """Просмотр подписок пользователя."""
+
+        user = request.user
+        subscriptions = user.follower.all()
+        users_id = subscriptions.values_list('author_id', flat=True)
+        users = User.objects.filter(id__in=users_id)
+        paginated_queryset = self.paginate_queryset(users)
+        serializer = self.serializer_class(paginated_queryset,
+                                           context={'request': request},
+                                           many=True)
+        return self.get_paginated_response(serializer.data)
+
+    @action(detail=True,
+            methods=('post', 'delete'),
+            serializer_class=SubscriptionSerializer,
+            permission_classes=(IsAuthenticated,),
+            )
+    def subscribe(self, request, id=None):
+        """Добавление и удаление подписок пользователя."""
+
+        if request.method == 'POST':
+            serializer = self.get_serializer(
+                data=request.data,
+                context={'request': request, 'id': id}
+            )
+            serializer.is_valid(raise_exception=True)
+            response_data = serializer.save(id=id)
+            return Response(
+                {'message': 'Подписка успешно создана',
+                 'data': response_data},
+                status=status.HTTP_201_CREATED
+            )
+        elif request.method == 'DELETE':
+            subscription = get_object_or_404(
+                Subscription, user=self.request.user,
+                author=get_object_or_404(User, id=id)
+            )
+            subscription.delete()
+            return Response(
+                {'Успешная отписка'},
+                status=status.HTTP_204_NO_CONTENT
+            )
+
     # def subscribe(self, request, id):
     #     subscribing = get_object_or_404(User, pk=id)
 

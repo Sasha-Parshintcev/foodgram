@@ -1,8 +1,9 @@
 # from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
+from django.db.models import Sum
 
-# from food.models import Ingredient, RecipeIngredient
+from food.models import Ingredient, RecipeIngredient
 
 
 # def create_ingredients(recipe, ingredients):
@@ -46,3 +47,23 @@ def delete_model_instance(request, model_name, instance, error_message):
                         status=status.HTTP_400_BAD_REQUEST)
     model_name.objects.filter(user=request.user, recipe=instance).delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def create_shopping_list_report(shopping_cart):
+    recipes = shopping_cart.values_list('recipe_id', flat=True)
+    buy_list = RecipeIngredient.objects.filter(
+        recipe__in=recipes
+    ).values(
+        'ingredient'
+    ).annotate(
+        amount=Sum('amount')
+    )
+    buy_list_text = 'Foodgram\nСписок покупок:\n'
+    for item in buy_list:
+        ingredient = Ingredient.objects.get(pk=item['ingredient'])
+        amount = item['amount']
+        buy_list_text += (
+            f'{ingredient.name}, {amount} '
+            f'{ingredient.measurement_unit}\n'
+        )
+    return buy_list_text

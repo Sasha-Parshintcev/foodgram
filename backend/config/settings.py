@@ -31,10 +31,11 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
     'django_filters',
-    'shortener',
+    # 'shortener',
+    'shortener.apps.ShortenerConfig',
 ]
 
-SHORTENER_ENABLE_TEST_PATH = True
+# SHORTENER_ENABLE_TEST_PATH = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

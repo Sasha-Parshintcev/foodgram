@@ -159,7 +159,19 @@ class UserSerializer(UserSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
-    
+
+
+class RecipeShortSerializer(serializers.ModelSerializer):
+        """Сериализатор для показа короткой информации о рецепте."""
+
+        class Meta:
+            model = Recipe
+            fields = (
+                'id',
+                'name',
+                'image',
+                'cooking_time'
+            )
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     """Сериализатор для работы со списком покупок."""
@@ -176,7 +188,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         request = self.context.get('request')
-        return RecipeSerializer(
+        return RecipeShortSerializer(
             instance.recipe,
             context={'request': request}
         ).data
@@ -377,7 +389,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Рецепт не может содержать повторяющиеся теги')
         
         return data
-    
+
     # def get_is_favorited(self, obj):
     #     request = self.context.get('request')
     #     return (request and request.user.is_authenticated

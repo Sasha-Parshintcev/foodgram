@@ -6,8 +6,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include ('api.urls')),
-    path('s/', include('shortener.urls')),
+    path('api/', include ('api.urls')), #, namespace='api'
+    path('s/', include('shortener.urls', namespace='shortener')), #
     # path('api-auth/', include('rest_framework.urls')),
     # path('api-token-auth/', views.obtain_auth_token),
     # path('auth/', include('djoser.urls')),
