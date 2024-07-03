@@ -1,12 +1,9 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator
-import base64
+from django.core.validators import MinValueValidator
 
 User = get_user_model()
 
-
-# MAX_LENGTH_SHORT_LINK=200
 TEXT_LENGTH_LIMIT=20
 MIN_COOK_TIME=1
 
@@ -22,7 +19,6 @@ class Tag(models.Model):
     slug = models.SlugField(
         'Идентификатор',
         max_length=32,
-        # regex=r'^[\w.@+-]+$',
         unique=True
     )
 
@@ -100,8 +96,6 @@ class Recipe(models.Model):
         related_name='recipes'
     )
     cooking_time = models.PositiveSmallIntegerField(
-        # null=False,
-        # default=1,
         verbose_name='Время приготовления',
         help_text='Введите время приготовления',
         validators=(
@@ -174,13 +168,6 @@ class RecipeIngredient(models.Model):
     )
 
     class Meta:
-        # constraints = (
-        #     models.UniqueConstraint(
-        #         fields=('ingredient', 'recipe'),
-        #         name='unique_ingredient'
-        #     ),
-        # )
-        # default_related_name = 'ingredient_in_recipe'
         verbose_name = 'Ингредиенты рецепта'
         verbose_name_plural = 'Ингредиенты рецептов'
 
@@ -216,17 +203,3 @@ class ShoppingCart(models.Model):
     def __str__(self):
         return (f'{self.user.username} добавил'
                 f'{self.recipe.name} в список покупок')
-    
-
-# class Shortener(models.Model):
-#     '''
-#     Модель короткой ссылки.
-#     ''' 
-#     create = models.DateTimeField(auto_now_add=True)
-#     short_url = models.CharField(max_length=15, unique=True, blank=True)
-
-#     class Meta:
-#         ordering = ["-create"]
-
-#     def __str__(self):
-#         return f'{self.short_url}'

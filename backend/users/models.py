@@ -40,8 +40,6 @@ class User(AbstractUser):
     avatar = models.ImageField(
         upload_to='users/',
         blank=True,
-        # null=True,
-        # default='users/image.png'
         default=None
     )
     USERNAME_FIELD = 'email'
@@ -84,4 +82,3 @@ class Subscription(models.Model):
     def __str__(self):
         return (f'{self.user[:TEXT_LENGTH_LIMIT]}'
                 f'подписался на {self.author[:TEXT_LENGTH_LIMIT]}')
-

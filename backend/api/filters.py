@@ -5,9 +5,7 @@ from users.models import User
 
 
 class RecipeFilter(FilterSet):
-    """
-    Фильтр выборки рецептов по определенным полям.
-    """
+    """Фильтр выборки рецептов по определенным полям."""
     is_favorited = filters.BooleanFilter(
         method='get_is_favorited'
     )
@@ -31,7 +29,7 @@ class RecipeFilter(FilterSet):
             'is_favorited',
             'is_in_shopping_cart',
             'tags',
-            'author',
+            'author'
         )
 
     def get_is_favorited(self, queryset, name, value):

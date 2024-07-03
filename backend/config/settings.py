@@ -1,4 +1,3 @@
-from datetime import timedelta
 import os
 from pathlib import Path
 
@@ -26,16 +25,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-    # 'django_filters',
     'food.apps.FoodConfig',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
     'django_filters',
-    # 'shortener',
     'shortener.apps.ShortenerConfig',
 ]
-
-# SHORTENER_ENABLE_TEST_PATH = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -116,18 +111,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
 
-
-# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-
-# EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
-
-# DEFAULT_FROM_EMAIL = 'support@yamdb.fake'
-
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'SERIALIZERS': {
-        # 'user_create': 'api.serializers.UserSignUpSerializer',
         'user': 'api.serializers.UserSerializer',
         'current_user': 'api.serializers.UserSerializer',
     },
@@ -149,13 +136,5 @@ REST_FRAMEWORK = {
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 
-    'PAGE_SIZE': 5,
-
-    # 'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+    'PAGE_SIZE': 5
 }
-
-
-# SIMPLE_JWT = {
-#    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-#    'AUTH_HEADER_TYPES': ('Bearer',),
-# } 
