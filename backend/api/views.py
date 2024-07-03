@@ -267,7 +267,7 @@ class UserViewSet(djoser_views.UserViewSet):
     """Вьюсет для работы с пользователями."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     # pagination_class = LimitOffsetPagination
 
 
@@ -333,11 +333,11 @@ class UserViewSet(djoser_views.UserViewSet):
             )
             serializer.is_valid(raise_exception=True)
             response_data = serializer.save(id=id)
-            return Response(
-                {'message': 'Подписка успешно создана',
-                 'data': response_data},
-                status=status.HTTP_201_CREATED
-            )
+            return Response(response_data, status=status.HTTP_201_CREATED)
+                # {}, #'message': 'Подписка успешно создана', 'data': 
+                 
+                
+            # )
         elif request.method == 'DELETE':
             subscription = get_object_or_404(
                 Subscription, user=self.request.user,
