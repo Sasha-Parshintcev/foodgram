@@ -4,8 +4,8 @@ from django.core.validators import MinValueValidator
 
 User = get_user_model()
 
-TEXT_LENGTH_LIMIT=20
-MIN_COOK_TIME=1
+TEXT_LENGTH_LIMIT = 20
+MIN_COOK_TIME = 1
 
 
 class Tag(models.Model):
@@ -14,7 +14,7 @@ class Tag(models.Model):
         'Название',
         max_length=32,
         unique=True
-        
+
     )
     slug = models.SlugField(
         'Идентификатор',
@@ -40,7 +40,7 @@ class Ingredient(models.Model):
     measurement_unit = models.CharField(
         'Единица измерения',
         help_text='Применяйте наиболее подходящую единицу измерения',
-        max_length=64 ,
+        max_length=64,
     )
 
     class Meta:
@@ -148,6 +148,7 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f'{self.user.username} добавил {self.recipe.name} в избраннное'
+
 
 class RecipeIngredient(models.Model):
     """Модель ингредиентов для рецепта."""
