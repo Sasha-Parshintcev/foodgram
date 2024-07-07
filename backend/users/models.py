@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
-TEXT_LENGTH_LIMIT=20
+TEXT_LENGTH_LIMIT = 20
 
 
 class User(AbstractUser):
@@ -19,7 +19,7 @@ class User(AbstractUser):
     username = models.CharField(
         'Логин',
         max_length=150,
-        validators = [UnicodeUsernameValidator()],
+        validators=[UnicodeUsernameValidator()],
         unique=True,
         error_messages={
             'unique': 'Пользователь с таким username уже существует.',
@@ -58,14 +58,14 @@ class Subscription(models.Model):
     """Модель подписок пользователя."""
     user = models.ForeignKey(
         User,
-        null = True,
+        null=True,
         unique=True,
         on_delete=models.CASCADE,
         related_name='follower',
         verbose_name='Пользователь')
     author = models.ForeignKey(
         User,
-        null = True,
+        null=True,
         unique=True,
         verbose_name='Подписка',
         related_name='following',
