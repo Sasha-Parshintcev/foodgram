@@ -40,7 +40,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     Данный вьюсет отвечает за управление рецептами в Вашем приложении.
     Он предоставляет стандартные методы для
     создания, чтения, обновления и удаления рецептов.
-    
+
     Разрешения: Для чтения рецептов доступ открыт для всех пользователей,
     а для создания, обновления и удаления рецептов требуется авторизация.
     Кроме того, пользователь должен быть автором рецепта,
@@ -48,7 +48,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     Фильтрация: Для фильтрации рецептов используется класс RecipeFilter,
     который позволяет фильтровать по различным критериям.
-    
+
     Методы HTTP: Поддерживаются методы GET, POST, PATCH и DELETE.
     """
     queryset = Recipe.objects.all()
@@ -56,7 +56,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
-    
+
     def get_queryset(self):
         """
         Переопределяет стандартный метод get_queryset,
@@ -68,7 +68,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'ingredients', 'tags'
         ).all()
         return recipes
-    
+
     def perform_create(self, serializer):
         """Переопределяет стандартный метод perform_create,
         чтобы автоматически назначать текущего пользователя
@@ -92,7 +92,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.request.method in SAFE_METHODS:
             return RecipeSerializer
         return RecipeCreateSerializer
-    
+
     @action(
         methods=['get'],
         detail=True,
@@ -107,10 +107,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
         long_url = request.build_absolute_uri(f'/recipes/{recipe.pk}/')
         short_id = shortuuid.uuid()[:6]
-        short_url = Url.objects.create(long_url=long_url, short_id=short_id)   
+        short_url = Url.objects.create(long_url=long_url, short_id=short_id)
         short_link = request.build_absolute_uri(f'/s/{short_url.short_id}/')
-        return Response({'short-link': short_link }, status=HTTPStatus.OK)
-
+        return Response({'short-link': short_link}, status=HTTPStatus.OK)
 
     @action(
         detail=True,
@@ -123,7 +122,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         удалять их из избранного. Он поддерживает методы GET, POST и DELETE.
         """
         recipe = get_object_or_404(Recipe, id=pk)
-        
+
         if request.method == 'POST':
             return create_model_instance(request, recipe, FavoriteSerializer)
 
@@ -144,7 +143,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Он поддерживает методы POST и DELETE.
         """
         recipe = get_object_or_404(Recipe, id=pk)
-        
+
         if request.method == 'POST':
             return create_model_instance(request, recipe,
                                          ShoppingCartSerializer)
@@ -175,9 +174,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
 
-class IngredientViewSet(mixins.ListModelMixin,
+class IngredientViewSet(
+    mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet):
+    viewsets.GenericViewSet
+):
     """
     Вьюсет для работы с ингредиентами.
 
@@ -195,11 +196,13 @@ class IngredientViewSet(mixins.ListModelMixin,
     serializer_class = IngredientSerializer
     pagination_class = None
     permission_classes = (AllowAny,)
-    
 
-class TagViewSet(mixins.ListModelMixin,
+
+class TagViewSet(
+    mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet):
+    viewsets.GenericViewSet
+):
     """
     Вьюсет для работы с тегами.
 
@@ -217,12 +220,12 @@ class TagViewSet(mixins.ListModelMixin,
     serializer_class = TagSerializer
     pagination_class = None
     permission_classes = (AllowAny,)
-    
+
 
 class UserViewSet(djoser_views.UserViewSet):
     """
     Вьюсет для работы с пользователями.
-    
+
     Реализует следующие действия:
     - Получение информации о текущем пользователе
     - Обновление аватара
@@ -233,14 +236,18 @@ class UserViewSet(djoser_views.UserViewSet):
     - Используется модель User
     - Применяется сериализатор UserSerializer
     - Доступ разрешен для всех пользователей на чтение и
-      для аутентифицированных на изменение 
+      для аутентифицированных на изменение
       (permission_classes = (IsAuthenticatedOrReadOnly,))
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
-    @action(['get'], detail=False, permission_classes = (IsAuthenticated,))
+    @action(
+        methods=('get',),
+        detail=False,
+        permission_classes=(IsAuthenticated,)
+    )
     def me(self, request):
         """
         Получить информацию о текущем пользователе.
@@ -297,7 +304,8 @@ class UserViewSet(djoser_views.UserViewSet):
         """
         Получить список подписок текущего пользователя.
 
-        Возвращает список пользователей, на которых подписан текущий пользователь,
+        Возвращает список пользователей,
+        на которых подписан текущий пользователь,
         с использованием пагинации.
         """
 

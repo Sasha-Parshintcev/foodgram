@@ -1,4 +1,3 @@
-from django.utils.translation import gettext_lazy as _
 from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 from django.db import transaction
@@ -41,6 +40,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
             context={'request': request}
         ).data
 
+
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Ingredient."""
 
@@ -51,6 +51,7 @@ class IngredientSerializer(serializers.ModelSerializer):
             'name',
             'measurement_unit'
         )
+
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к RecipeIngredient."""
@@ -73,7 +74,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
             'amount'
         )
 
-    
+
 class RecipeIngredientWriteSerializer(serializers.ModelSerializer):
     '''Сериализатор для модели RecipeIngredient.'''
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
@@ -85,9 +86,10 @@ class RecipeIngredientWriteSerializer(serializers.ModelSerializer):
             'amount'
         )
 
+
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Tag."""
-    
+
     class Meta:
         model = Tag
         fields = (
@@ -95,6 +97,7 @@ class TagSerializer(serializers.ModelSerializer):
             'name',
             'slug'
         )
+
 
 class Base64ImageField(serializers.ImageField):
     """
@@ -115,18 +118,19 @@ class Base64ImageField(serializers.ImageField):
         для обработки данных изображения в кодировке Base64.
         """
         if isinstance(data, str) and data.startswith('data:image/png'):
-            format, imgstr = data.split(';base64,')  
-            ext = format.split('/')[-1]  
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
 
         return super().to_internal_value(data)
+
 
 class UserSerializer(UserSerializer):
     """Сериализатор пользователя."""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     avatar = Base64ImageField(required=False, allow_null=True, read_only=True)
     extra_kwargs = {'password': {'write_only': True},
-                        'is_subscribed': {'read_only': True}}
+                    'is_subscribed': {'read_only': True}}
 
     class Meta:
         model = User
@@ -139,7 +143,7 @@ class UserSerializer(UserSerializer):
             'is_subscribed',
             'avatar'
         )
-    
+
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли текущий пользователь на указанный объект."""
         user = self.context.get('request').user
@@ -153,16 +157,17 @@ class UserSerializer(UserSerializer):
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
-        """Сериализатор для показа сокращенной информации о рецепте."""
+    """Сериализатор для показа сокращенной информации о рецепте."""
 
-        class Meta:
-            model = Recipe
-            fields = (
-                'id',
-                'name',
-                'image',
-                'cooking_time'
-            )
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time'
+        )
+
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     """Сериализатор для работы со списком покупок."""
@@ -190,6 +195,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
             instance.recipe,
             context={'request': request}
         ).data
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для запросов к Recipe."""
@@ -274,14 +280,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         """Вспомогательная функция для добавления ингредиентов.
         Используется при создании/редактировании рецепта."""
         RecipeIngredient.objects.bulk_create(
-                [
-                    RecipeIngredient(
-                        recipe=recipe,
-                        ingredient=ingredient['id'],
-                        amount=ingredient['amount']
-                    ) for ingredient in ingredients
-                ]
-            )
+            [
+                RecipeIngredient(
+                    recipe=recipe,
+                    ingredient=ingredient['id'],
+                    amount=ingredient['amount']
+                ) for ingredient in ingredients
+            ]
+        )
 
     @transaction.atomic
     def create(self, validated_data):
@@ -303,7 +309,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.filter(recipe=instance).delete()
         self.create_ingredients(instance, ingredients)
         return instance
-    
+
     def to_representation(self, instance):
         """
         Метод для преобразования объекта модели
@@ -335,20 +341,20 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Количество не может быть меньше 1'
                 )
-            
+
             ingredient_id = ingredient.get('id')
             if not ingredient_id:
                 raise serializers.ValidationError(
                     'Поле "id" ингредиента не может быть пустым'
                 )
-            
+
             if ingredient_id in ingredients_list:
                 raise serializers.ValidationError(
                     'Вы пытаетесь добавить в рецепт два одинаковых ингредиента'
                 )
-            
+
             ingredients_list.append(ingredient_id)
-        
+
         tags = data.get('tags', [])
         if not tags:
             raise serializers.ValidationError(
@@ -358,7 +364,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Рецепт не может содержать повторяющиеся теги'
             )
-        
+
         return data
 
 
@@ -369,7 +375,7 @@ class AvatarSerializer(serializers.Serializer):
     class Meta:
         fields = ('avatar',)
 
-    
+
 class SubscriptionSerializer(serializers.ModelSerializer):
     """Просмотр списка подписок пользователя."""
 
@@ -402,7 +408,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             return False
         return obj.following.filter(user=user).exists()
 
-    
+
 class SubscribeSerializer(serializers.Serializer):
     """Сериаоизатор добавления и удаления подписок пользователя."""
 
