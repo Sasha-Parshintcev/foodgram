@@ -33,11 +33,19 @@ class RecipeFilter(FilterSet):
         )
 
     def get_is_favorited(self, queryset, name, value):
+        """
+        Фильтрует queryset, чтобы включать только объекты,
+        добавленные в избранное текущим пользователем.
+        """
         if value:
             return queryset.filter(favorites__user=self.request.user)
         return queryset
 
     def get_is_in_shopping_cart(self, queryset, name, value):
+        """
+        Фильтрует queryset, чтобы включать только объекты,
+        добавленные в корзину текущим пользователем.
+        """
         if value:
             return queryset.filter(cart__user=self.request.user)
         return queryset

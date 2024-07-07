@@ -7,7 +7,7 @@ from food.models import Ingredient, RecipeIngredient
 
 def create_model_instance(request, instance, serializer_name):
     """Вспомогательная функция для добавления
-    рецепта в избранное либо список покупок.
+       рецепта в избранное либо список покупок.
     """
     serializer = serializer_name(
         data={'user': request.user.id, 'recipe': instance.id, },
@@ -20,7 +20,7 @@ def create_model_instance(request, instance, serializer_name):
 
 def delete_model_instance(request, model_name, instance, error_message):
     """Вспомогательная функция для удаления рецепта
-    из избранного либо из списка покупок.
+       из избранного либо из списка покупок.
     """
     if not model_name.objects.filter(user=request.user,
                                      recipe=instance).exists():
@@ -31,6 +31,10 @@ def delete_model_instance(request, model_name, instance, error_message):
 
 
 def create_shopping_list_report(shopping_cart):
+    """
+    Вспомогательная функция для создания текстового отчета со списком
+    необходимых ингредиентов для рецептов, содержащихся в корзине покупок.
+    """
     recipes = shopping_cart.values_list('recipe_id', flat=True)
     buy_list = RecipeIngredient.objects.filter(
         recipe__in=recipes

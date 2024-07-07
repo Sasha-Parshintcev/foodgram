@@ -31,6 +31,10 @@ class FavoriteSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
+        """
+        Преобразует объект модели в представление,
+        используя сериализатор рецепта.
+        """
         request = self.context.get('request')
         return RecipeSerializer(
             instance.recipe,
@@ -93,7 +97,23 @@ class TagSerializer(serializers.ModelSerializer):
         )
 
 class Base64ImageField(serializers.ImageField):
+    """
+    Пользовательское поле сериализатора Django REST Framework,
+    которое обрабатывает данные изображения в кодировке Base64.
+
+    Это поле позволяет клиенту отправлять данные изображения в виде строки
+    в кодировке Base64 в полезных данных запроса.
+    Затем поле декодирует строку и создаст объект ContentFile,
+    который можно сохранить в базе данных.
+
+    Поле ожидает, что данные изображения будут
+    в формате `data:image/png;base64,<base64_data>`.
+    """
     def to_internal_value(self, data):
+        """
+        Переопределяет метод to_internal_value() по умолчанию
+        для обработки данных изображения в кодировке Base64.
+        """
         if isinstance(data, str) and data.startswith('data:image/png'):
             format, imgstr = data.split(';base64,')  
             ext = format.split('/')[-1]  
@@ -121,17 +141,19 @@ class UserSerializer(UserSerializer):
         )
     
     def get_is_subscribed(self, obj):
+        """Проверяет, подписан ли текущий пользователь на указанный объект."""
         user = self.context.get('request').user
         if not user.is_anonymous:
             return Subscription.objects.filter(user=user, author=obj).exists()
         return False
 
     def create(self, validated_data):
+        """Создает нового пользователя с указанными данными."""
         return User.objects.create_user(**validated_data)
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
-        """Сериализатор для показа короткой информации о рецепте."""
+        """Сериализатор для показа сокращенной информации о рецепте."""
 
         class Meta:
             model = Recipe
@@ -159,6 +181,10 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
+        """
+        Метод для преобразования объекта модели
+        в сериализованное представление.
+        """
         request = self.context.get('request')
         return RecipeShortSerializer(
             instance.recipe,
@@ -192,6 +218,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, obj):
+        """
+        Проверяет, добавлен ли переданный объект obj
+        в список избранного текущим пользователем.
+        """
         request = self.context.get('request')
         if request.user.is_authenticated:
             return Favorite.objects.filter(
@@ -201,6 +231,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         return False
 
     def get_is_in_shopping_cart(self, obj):
+        """
+        Проверяет, добавлен ли переданный объект obj
+        в корзину покупок текущего пользователя.
+        """
         request = self.context.get('request')
         if request.user.is_authenticated:
             return ShoppingCart.objects.filter(
@@ -251,6 +285,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        """Создает новый рецепт в базе данных."""
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
@@ -260,7 +295,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        """Обновление рецепта."""
+        """Обновляет существующий рецепт в базе данных."""
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         instance = super().update(instance, validated_data)
@@ -270,6 +305,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return instance
     
     def to_representation(self, instance):
+        """
+        Метод для преобразования объекта модели
+        в сериализованное представление.
+        """
         return RecipeSerializer(
             instance,
             context={'request': self.context.get('request')}
@@ -324,6 +363,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
 
 class AvatarSerializer(serializers.Serializer):
+    """Сериализатор аватара."""
     avatar = Base64ImageField(required=True, allow_null=True)
 
     class Meta:
@@ -355,6 +395,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
+        """Проверяет, подписан ли текущий пользователь на переданный объект."""
         request = self.context.get('request')
         user = self.context['request'].user
         if not request or not user.is_authenticated:
@@ -363,7 +404,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     
 class SubscribeSerializer(serializers.Serializer):
-    """Добавление и удаление подписок пользователя."""
+    """Сериаоизатор добавления и удаления подписок пользователя."""
 
     class Meta:
         model = Subscription
@@ -379,6 +420,7 @@ class SubscribeSerializer(serializers.Serializer):
         )
 
     def validate(self, data):
+        """Валидация на повторную подписку или на себя."""
         user = self.context.get('request').user
         author = get_object_or_404(User, pk=self.context['id'])
         if user == author:
@@ -392,6 +434,7 @@ class SubscribeSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
+        """Создает новую подписку в базе данных."""
         user = self.context.get('request').user
         author = get_object_or_404(User, pk=validated_data['id'])
         Subscription.objects.create(user=user, author=author)

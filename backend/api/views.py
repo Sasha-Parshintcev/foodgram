@@ -36,7 +36,21 @@ from .permissions import IsAuthorOrReadOnly
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """Вьюсет для работы с рецептами."""
+    """
+    Данный вьюсет отвечает за управление рецептами в Вашем приложении.
+    Он предоставляет стандартные методы для
+    создания, чтения, обновления и удаления рецептов.
+    
+    Разрешения: Для чтения рецептов доступ открыт для всех пользователей,
+    а для создания, обновления и удаления рецептов требуется авторизация.
+    Кроме того, пользователь должен быть автором рецепта,
+    чтобы иметь право на его изменение или удаление.
+
+    Фильтрация: Для фильтрации рецептов используется класс RecipeFilter,
+    который позволяет фильтровать по различным критериям.
+    
+    Методы HTTP: Поддерживаются методы GET, POST, PATCH и DELETE.
+    """
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
@@ -44,19 +58,37 @@ class RecipeViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
     
     def get_queryset(self):
+        """
+        Переопределяет стандартный метод get_queryset,
+        чтобы предварительно загрузить связанные объекты ingredients и tags
+        для каждого рецепта. Это позволяет оптимизировать
+        количество запросов к базе данных.
+        """
         recipes = Recipe.objects.prefetch_related(
             'ingredients', 'tags'
         ).all()
         return recipes
     
     def perform_create(self, serializer):
-        """Сохранение автора при создании рецепта."""
+        """Переопределяет стандартный метод perform_create,
+        чтобы автоматически назначать текущего пользователя
+        в качестве автора при создании рецепта."""
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
+        """Переопределяет стандартный метод perform_update,
+        чтобы автоматически назначать текущего пользователя в качестве автора
+        при обновлении рецепта."""
         serializer.save(author=self.request.user)
 
     def get_serializer_class(self, *args, **kwargs):
+        """
+        Переопределяет стандартный метод get_serializer_class,
+        чтобы использовать RecipeSerializer для безопасных методов HTTP
+        (GET, HEAD, OPTIONS) и RecipeCreateSerializer для небезопасных методов
+        (POST, PATCH, DELETE). Это позволяет контролировать,
+        какие поля доступны для чтения и записи.
+        """
         if self.request.method in SAFE_METHODS:
             return RecipeSerializer
         return RecipeCreateSerializer
@@ -67,6 +99,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link',
     )
     def get_link(self, request, pk=None):
+        """
+        Данный метод генерирует короткую ссылку
+        для конкретного рецепта. Он принимает запрос на GET и
+        возвращает короткую ссылку в формате JSON.
+        """
         recipe = self.get_object()
         long_url = request.build_absolute_uri(f'/recipes/{recipe.pk}/')
         short_id = shortuuid.uuid()[:6]
@@ -81,8 +118,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticatedOrReadOnly, ]
     )
     def favorite(self, request, pk):
-        """Работа с избранными рецептами.
-        Удаление/добавление в избранное.
+        """
+        Данный метод позволяет пользователям добавлять рецепты в избранное и
+        удалять их из избранного. Он поддерживает методы GET, POST и DELETE.
         """
         recipe = get_object_or_404(Recipe, id=pk)
         
@@ -100,8 +138,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated, ]
     )
     def shopping_cart(self, request, pk):
-        """Работа со списком покупок.
-        Удаление/добавление в список покупок.
+        """
+        Данный метод позволяет пользователям добавлять рецепты
+        в список покупок и удалять их из списка.
+        Он поддерживает методы POST и DELETE.
         """
         recipe = get_object_or_404(Recipe, id=pk)
         
@@ -120,7 +160,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(AllowAny,),
     )
     def download_shopping_cart(self, request):
-        """Отправка файла со списком покупок."""
+        """
+        Данный метод позволяет пользователям скачать текстовый файл
+        со списком ингредиентов, необходимых для рецептов, добавленных
+        в список покупок. Метод поддерживает только GET запросы.
+        """
 
         shopping_cart = ShoppingCart.objects.filter(user=self.request.user)
         buy_list_text = create_shopping_list_report(shopping_cart)
@@ -134,7 +178,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet):
-    """ViewSet для работы с ингредиентами."""
+    """
+    Вьюсет для работы с ингредиентами.
+
+    Реализует следующие действия:
+    - Получение списка всех ингредиентов (list)
+    - Получение детальной информации об одном ингредиенте (retrieve)
+
+    Особенности:
+    - Используется модель Ingredient
+    - Применяется сериализатор IngredientSerializer
+    - Отключена постраничная навигация (pagination_class = None)
+    - Доступ разрешен для всех пользователей (permission_classes = (AllowAny,))
+    """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
@@ -144,7 +200,19 @@ class IngredientViewSet(mixins.ListModelMixin,
 class TagViewSet(mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet):
-    """ViewSet для работы с тегами."""
+    """
+    Вьюсет для работы с тегами.
+
+    Реализует следующие действия:
+    - Получение списка всех ингредиентов (list)
+    - Получение детальной информации об одном ингредиенте (retrieve)
+
+    Особенности:
+    - Используется модель Tag
+    - Применяется сериализатор TagSerializer
+    - Отключена постраничная навигация (pagination_class = None)
+    - Доступ разрешен для всех пользователей (permission_classes = (AllowAny,))
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
@@ -152,13 +220,33 @@ class TagViewSet(mixins.ListModelMixin,
     
 
 class UserViewSet(djoser_views.UserViewSet):
-    """Вьюсет для работы с пользователями."""
+    """
+    Вьюсет для работы с пользователями.
+    
+    Реализует следующие действия:
+    - Получение информации о текущем пользователе
+    - Обновление аватара
+    - просмотреть список подписок пользователя и подписаться/отписаться
+      от других пользователей.
+
+    Особенности:
+    - Используется модель User
+    - Применяется сериализатор UserSerializer
+    - Доступ разрешен для всех пользователей на чтение и
+      для аутентифицированных на изменение 
+      (permission_classes = (IsAuthenticatedOrReadOnly,))
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     @action(['get'], detail=False, permission_classes = (IsAuthenticated,))
     def me(self, request):
+        """
+        Получить информацию о текущем пользователе.
+
+        Возвращает данные текущего пользователя в формате JSON.
+        """
         serializer = UserSerializer(
             instance=request.user,
             context={'request': request}
@@ -167,6 +255,12 @@ class UserViewSet(djoser_views.UserViewSet):
 
     @action(methods=['put', 'delete'], detail=False, url_path='me/avatar')
     def avatar(self, request):
+        """
+        Обновить или удалить аватар текущего пользователя.
+
+        Принимает данные аватара в формате JSON и обновляет аватар текущего
+        пользователя. Если передается метод DELETE, то аватар удаляется.
+        """
         user = request.user
         if not user.is_authenticated:
             return Response(
@@ -200,7 +294,12 @@ class UserViewSet(djoser_views.UserViewSet):
         pagination_class=LimitOffsetPagination
     )
     def subscriptions(self, request):
-        """Просмотр подписок пользователя."""
+        """
+        Получить список подписок текущего пользователя.
+
+        Возвращает список пользователей, на которых подписан текущий пользователь,
+        с использованием пагинации.
+        """
 
         user = request.user
         subscriptions = user.follower.all()
@@ -218,7 +317,12 @@ class UserViewSet(djoser_views.UserViewSet):
             permission_classes=(IsAuthenticated,),
             )
     def subscribe(self, request, id=None):
-        """Добавление и удаление подписок пользователя."""
+        """
+        Подписаться или отписаться от пользователя.
+
+        Принимает ID пользователя, на которого необходимо подписаться или
+        от которого необходимо отписаться. Возвращает соответствующий ответ.
+        """
 
         if request.method == 'POST':
             serializer = self.get_serializer(

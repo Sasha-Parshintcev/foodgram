@@ -34,10 +34,11 @@ class User(AbstractUser):
         max_length=150
     )
     password = models.CharField(
+        'Пароль',
         max_length=150,
-        verbose_name='Пароль'
     )
     avatar = models.ImageField(
+        'аватар',
         upload_to='users/',
         blank=True,
         default=None
