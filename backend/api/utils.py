@@ -30,25 +30,18 @@ def delete_model_instance(request, model_name, instance, error_message):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-def create_shopping_list_report(shopping_cart):
+def create_shopping_list(shopping_cart):
     """
     Вспомогательная функция для создания текстового отчета со списком
     необходимых ингредиентов для рецептов, содержащихся в корзине покупок.
     """
-    recipes = shopping_cart.values_list('recipe_id', flat=True)
-    buy_list = RecipeIngredient.objects.filter(
-        recipe__in=recipes
-    ).values(
-        'ingredient'
-    ).annotate(
-        amount=Sum('amount')
-    )
-    buy_list_text = 'Foodgram\nСписок покупок:\n'
-    for item in buy_list:
-        ingredient = Ingredient.objects.get(pk=item['ingredient'])
-        amount = item['amount']
-        buy_list_text += (
-            f'{ingredient.name}, {amount} '
-            f'{ingredient.measurement_unit}\n'
-        )
-    return buy_list_text
+    recipe_id = shopping_cart.values_list('recipe_id', flat=True) 
+    buy_list = RecipeIngredient.objects.filter(recipe__in=recipe_id).values(
+        'ingredient').annotate(total_amount=Sum('amount')) 
+    buy_list_text = 'Список покупок Foodgram:\n' 
+    for item in buy_list: 
+        ingredient = Ingredient.objects.get(pk=item['ingredient']) 
+        amount = item['total_amount'] 
+        buy_list_text += (f'{ingredient.name},'
+                          f' {amount} {ingredient.measurement_unit}\n')
+    return buy_list

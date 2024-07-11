@@ -20,7 +20,7 @@ from users.models import User, Subscription
 from .utils import (
     create_model_instance,
     delete_model_instance,
-    create_shopping_list_report
+    create_shopping_list
 )
 from food.models import (
     Tag, Ingredient, Recipe, Favorite,
@@ -165,7 +165,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         shopping_cart_items = ShoppingCart.objects.filter(
             user=user_id
         )
-        buy_list_text = create_shopping_list_report(
+        buy_list_text = create_shopping_list(
             shopping_cart_items
         )
         response = HttpResponse(
