@@ -161,11 +161,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
         в список покупок. Метод поддерживает только GET запросы.
         """
 
-        shopping_cart = ShoppingCart.objects.filter(user=self.request.user.id)
-        buy_list_text = create_shopping_list_report(shopping_cart)
-        response = HttpResponse(buy_list_text, content_type="text/plain")
+        user_id = self.request.user.id
+        shopping_cart_items = ShoppingCart.objects.filter(
+            user=user_id
+        )
+        buy_list_text = create_shopping_list_report(
+            shopping_cart_items
+        )
+        response = HttpResponse(
+            buy_list_text,
+            content_type="text/plain"
+        )
         response['Content-Disposition'] = (
-            'attachment; filename=shopping-list.txt'
+            'attachment; filename=shopping_list_ingredients.txt'
         )
         return response
 
