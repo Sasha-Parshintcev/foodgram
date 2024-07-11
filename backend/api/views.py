@@ -55,7 +55,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_queryset(self):
         """
@@ -64,10 +64,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         для каждого рецепта. Это позволяет оптимизировать
         количество запросов к базе данных.
         """
-        recipes = Recipe.objects.prefetch_related(
-            'ingredients', 'tags'
-        ).all()
-        return recipes
+        return Recipe.objects.prefetch_related('ingredients', 'tags').all()
 
     def perform_create(self, serializer):
         """Переопределяет стандартный метод perform_create,
@@ -94,7 +91,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeCreateSerializer
 
     @action(
-        methods=['get'],
         detail=True,
         url_path='get-link',
     )
@@ -113,13 +109,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=['get', 'post', 'delete'],
+        methods=('post', 'delete'),
         permission_classes=[IsAuthenticatedOrReadOnly, ]
     )
     def favorite(self, request, pk):
         """
         Данный метод позволяет пользователям добавлять рецепты в избранное и
-        удалять их из избранного. Он поддерживает методы GET, POST и DELETE.
+        удалять их из избранного. Он поддерживает методы POST и DELETE.
         """
         recipe = get_object_or_404(Recipe, id=pk)
 
@@ -133,7 +129,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
+        methods=('post', 'delete'),
         permission_classes=[IsAuthenticated, ]
     )
     def shopping_cart(self, request, pk):
@@ -145,17 +141,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
 
         if request.method == 'POST':
-            return create_model_instance(request, recipe,
-                                         ShoppingCartSerializer)
+            return create_model_instance(
+                request, recipe, ShoppingCartSerializer
+            )
 
         if request.method == 'DELETE':
-            error_message = 'У вас нет этого рецепта в списке покупок'
-            return delete_model_instance(request, ShoppingCart,
-                                         recipe, error_message)
+            return delete_model_instance(
+                request, ShoppingCart, recipe
+            )
 
     @action(
         detail=False,
-        methods=('get',),
         permission_classes=(AllowAny,),
     )
     def download_shopping_cart(self, request):
@@ -165,7 +161,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         в список покупок. Метод поддерживает только GET запросы.
         """
 
-        shopping_cart = ShoppingCart.objects.filter(user=self.request.user)
+        shopping_cart = ShoppingCart.objects.filter(user=self.request.user.id)
         buy_list_text = create_shopping_list_report(shopping_cart)
         response = HttpResponse(buy_list_text, content_type="text/plain")
         response['Content-Disposition'] = (
@@ -244,7 +240,6 @@ class UserViewSet(djoser_views.UserViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     @action(
-        methods=('get',),
         detail=False,
         permission_classes=(IsAuthenticated,)
     )
@@ -260,7 +255,11 @@ class UserViewSet(djoser_views.UserViewSet):
         )
         return Response(serializer.data)
 
-    @action(methods=['put', 'delete'], detail=False, url_path='me/avatar')
+    @action(
+            methods=('put', 'delete'),
+            detail=False,
+            url_path='me/avatar'
+        )
     def avatar(self, request):
         """
         Обновить или удалить аватар текущего пользователя.
@@ -294,7 +293,6 @@ class UserViewSet(djoser_views.UserViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
-        methods=('get',),
         detail=False,
         serializer_class=SubscriptionSerializer,
         permission_classes=(IsAuthenticated,),
@@ -314,12 +312,15 @@ class UserViewSet(djoser_views.UserViewSet):
         users_id = subscriptions.values_list('author_id', flat=True)
         users = User.objects.filter(id__in=users_id)
         paginated_queryset = self.paginate_queryset(users)
-        serializer = self.serializer_class(paginated_queryset,
-                                           context={'request': request},
-                                           many=True)
+        serializer = self.serializer_class(
+            paginated_queryset,
+            context={'request': request},
+            many=True
+        )
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True,
+    @action(
+            detail=True,
             methods=('post', 'delete'),
             serializer_class=SubscribeSerializer,
             permission_classes=(IsAuthenticated,),
@@ -348,6 +349,6 @@ class UserViewSet(djoser_views.UserViewSet):
             )
             subscription.delete()
             return Response(
-                {'Успешная отписка'},
+                {'Вы отписались'},
                 status=status.HTTP_204_NO_CONTENT
             )
