@@ -16,5 +16,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
         Проверяет, имеет ли текущий пользователь разрешение
         на выполнение запрошенного действия.
         """
-        return (request.method in permissions.SAFE_METHODS
-                or obj.author == request.user)
+        return (
+            request.method in permissions.SAFE_METHODS
+            or obj.author == request.user
+        )

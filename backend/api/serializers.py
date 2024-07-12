@@ -24,8 +24,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
         validators = [
             UniqueTogetherValidator(
                 queryset=Favorite.objects.all(),
-                fields=('user', 'recipe'),
-                message='Рецепт уже добавлен в избранное'
+                fields=('user', 'recipe')
             )
         ]
 
@@ -35,7 +34,34 @@ class FavoriteSerializer(serializers.ModelSerializer):
         используя сериализатор рецепта.
         """
         request = self.context.get('request')
-        return RecipeSerializer(
+        return RecipeShortSerializer(
+            instance.recipe,
+            context={'request': request}
+        ).data
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы со списком покупок."""
+    class Meta:
+        model = ShoppingCart
+        fields = (
+            'user',
+            'recipe'
+        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingCart.objects.all(),
+                fields=('user', 'recipe')
+            )
+        ]
+
+    def to_representation(self, instance):
+        """
+        Метод для преобразования объекта модели
+        в сериализованное представление.
+        """
+        request = self.context.get('request')
+        return RecipeShortSerializer(
             instance.recipe,
             context={'request': request}
         ).data
@@ -148,7 +174,10 @@ class UserSerializer(UserSerializer):
         """Проверяет, подписан ли текущий пользователь на указанный объект."""
         user = self.context.get('request').user
         if not user.is_anonymous:
-            return Subscription.objects.filter(user=user, author=obj).exists()
+            return Subscription.objects.filter(
+                user=user,
+                author=obj
+            ).exists()
         return False
 
     def create(self, validated_data):
@@ -167,34 +196,6 @@ class RecipeShortSerializer(serializers.ModelSerializer):
             'image',
             'cooking_time'
         )
-
-
-class ShoppingCartSerializer(serializers.ModelSerializer):
-    """Сериализатор для работы со списком покупок."""
-    class Meta:
-        model = ShoppingCart
-        fields = (
-            'user',
-            'recipe'
-        )
-        validators = [
-            UniqueTogetherValidator(
-                queryset=ShoppingCart.objects.all(),
-                fields=('user', 'recipe'),
-                message='Рецепт уже добавлен в список покупок'
-            )
-        ]
-
-    def to_representation(self, instance):
-        """
-        Метод для преобразования объекта модели
-        в сериализованное представление.
-        """
-        request = self.context.get('request')
-        return RecipeShortSerializer(
-            instance.recipe,
-            context={'request': request}
-        ).data
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -445,6 +446,7 @@ class SubscribeSerializer(serializers.Serializer):
         author = get_object_or_404(User, pk=validated_data['id'])
         Subscription.objects.create(user=user, author=author)
         serializer = SubscriptionSerializer(
-            author, context={'request': self.context.get('request')}
+            author,
+            context={'request': self.context.get('request')}
         )
         return serializer.data

@@ -101,16 +101,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
         возвращает короткую ссылку в формате JSON.
         """
         recipe = self.get_object()
-        long_url = request.build_absolute_uri(f'/recipes/{recipe.pk}/')
+        long_url = request.build_absolute_uri(
+            f'/recipes/{recipe.pk}/'
+        )
         short_id = shortuuid.uuid()[:6]
-        short_url = Url.objects.create(long_url=long_url, short_id=short_id)
-        short_link = request.build_absolute_uri(f'/s/{short_url.short_id}/')
-        return Response({'short-link': short_link}, status=HTTPStatus.OK)
+        short_url = Url.objects.create(
+            long_url=long_url,
+            short_id=short_id
+        )
+        short_link = request.build_absolute_uri(
+            f'/s/{short_url.short_id}/'
+        )
+        return Response(
+            {'short-link': short_link},
+            status=HTTPStatus.OK
+        )
 
     @action(
         detail=True,
         methods=('post', 'delete'),
-        permission_classes=[IsAuthenticatedOrReadOnly, ]
+        permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk):
         """
@@ -120,17 +130,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
 
         if request.method == 'POST':
-            return create_model_instance(request, recipe, FavoriteSerializer)
+            return create_model_instance(
+                request,
+                recipe,
+                FavoriteSerializer
+            )
 
         if request.method == 'DELETE':
-            error_message = 'У вас нет этого рецепта в избранном'
-            return delete_model_instance(request, Favorite,
-                                         recipe, error_message)
+            return delete_model_instance(
+                request,
+                Favorite,
+                recipe
+            )
 
     @action(
         detail=True,
         methods=('post', 'delete'),
-        permission_classes=[IsAuthenticated, ]
+        permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
         """
@@ -142,12 +158,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             return create_model_instance(
-                request, recipe, ShoppingCartSerializer
+                request,
+                recipe,
+                ShoppingCartSerializer
             )
 
         if request.method == 'DELETE':
             return delete_model_instance(
-                request, ShoppingCart, recipe
+                request,
+                ShoppingCart,
+                recipe
             )
 
     @action(
@@ -264,10 +284,10 @@ class UserViewSet(djoser_views.UserViewSet):
         return Response(serializer.data)
 
     @action(
-            methods=('put', 'delete'),
-            detail=False,
-            url_path='me/avatar'
-        )
+        methods=('put', 'delete'),
+        detail=False,
+        url_path='me/avatar'
+    )
     def avatar(self, request):
         """
         Обновить или удалить аватар текущего пользователя.
@@ -298,7 +318,9 @@ class UserViewSet(djoser_views.UserViewSet):
         elif request.method == 'DELETE':
             user.avatar = None
             user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                status=status.HTTP_204_NO_CONTENT
+            )
 
     @action(
         detail=False,
@@ -317,7 +339,10 @@ class UserViewSet(djoser_views.UserViewSet):
 
         user = request.user
         subscriptions = user.follower.all()
-        users_id = subscriptions.values_list('author_id', flat=True)
+        users_id = subscriptions.values_list(
+            'author_id',
+            flat=True
+        )
         users = User.objects.filter(id__in=users_id)
         paginated_queryset = self.paginate_queryset(users)
         serializer = self.serializer_class(
@@ -328,12 +353,12 @@ class UserViewSet(djoser_views.UserViewSet):
         return self.get_paginated_response(serializer.data)
 
     @action(
-            detail=True,
-            methods=('post', 'delete'),
-            serializer_class=SubscribeSerializer,
-            permission_classes=(IsAuthenticated,),
-            )
-    def subscribe(self, request, id=None):
+        detail=True,
+        methods=('post', 'delete'),
+        serializer_class=SubscribeSerializer,
+        permission_classes=(IsAuthenticated,),
+    )
+    def subscribe(self, request, id):
         """
         Подписаться или отписаться от пользователя.
 
@@ -348,15 +373,23 @@ class UserViewSet(djoser_views.UserViewSet):
             )
             serializer.is_valid(raise_exception=True)
             response_data = serializer.save(id=id)
-            return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response(
+                response_data,
+                status=status.HTTP_201_CREATED
+            )
 
         elif request.method == 'DELETE':
-            subscription = get_object_or_404(
-                Subscription, user=self.request.user,
+            subscription = Subscription.objects.filter(
+                user=request.user,
                 author=get_object_or_404(User, id=id)
             )
+
+            if not subscription.exists():
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
             subscription.delete()
             return Response(
-                {'Вы отписались'},
                 status=status.HTTP_204_NO_CONTENT
             )
